@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import ValidadorCedula from '@/components/ValidadorCedula'
 import { 
   Plus, 
   Edit, 
@@ -27,6 +28,14 @@ import {
   Filter
 } from 'lucide-react'
 
+interface LugarVotacion {
+  ciudad: string
+  puesto: string
+  mesa: string
+  direccion: string
+  departamento: string
+}
+
 interface Votante {
   id: string
   nombre: string
@@ -38,17 +47,11 @@ interface Votante {
   edad?: number
   genero?: string
   estado: string
-  colonia?: string
+  departamento?: string
   municipio?: string
-  seccion?: string
-  distrito?: string
-   lugarVotacion?: {
-    ciudad: string
-    puesto: string
-    mesa: string
-    direccion: string
-    departamento: string
-  }
+  barrio?: string
+  sitioVotacion?: string
+  lugarVotacion?: LugarVotacion
   ocupacion?: string
   nivelEstudio?: string
   intereses?: string
@@ -69,6 +72,7 @@ function VotanteForm({ votante, onSave, onCancel }: {
 }) {
   const [formData, setFormData] = useState({
     nombre: votante?.nombre || '',
+    cedula: votante?.cedula || '',
     email: votante?.email || '',
     telefono: votante?.telefono || '',
     whatsapp: votante?.whatsapp || '',
@@ -76,43 +80,73 @@ function VotanteForm({ votante, onSave, onCancel }: {
     edad: votante?.edad?.toString() || '',
     genero: votante?.genero || '',
     estado: votante?.estado || 'potencial',
-    colonia: votante?.colonia || '',
+    departamento: votante?.departamento || '',
     municipio: votante?.municipio || '',
-    seccion: votante?.seccion || '',
-    distrito: votante?.distrito || '',
+    barrio: votante?.barrio || '',
+    sitioVotacion: votante?.sitioVotacion || '',
     ocupacion: votante?.ocupacion || '',
     nivelEstudio: votante?.nivelEstudio || '',
     intereses: votante?.intereses || '',
     notas: votante?.notas || ''
   })
 
+  const [validacionCedula, setValidacionCedula] = useState<any>(null)
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validar que la cédula sea válida
+    if (!validacionCedula?.existe && formData.cedula) {
+      alert('Por favor valide la cédula antes de guardar el votante')
+      return
+    }
+
     onSave({
       ...formData,
-      edad: formData.edad ? parseInt(formData.edad) : undefined
+      edad: formData.edad ? parseInt(formData.edad) : undefined,
+      lugarVotacion: validacionCedula?.lugarVotacion
     })
+  }
+
+  const handleCedulaChange = (cedula: string) => {
+    setFormData({ ...formData, cedula })
+    // Limpiar validación anterior
+    setValidacionCedula(null)
+  }
+
+  const handleValidacionCedula = (validacion: any) => {
+    setValidacionCedula(validacion)
+  }
+
+  const handleLugarVotacionFound = (lugar: LugarVotacion) => {
+    // Autocompletar campos con datos del lugar de votación
+    setFormData(prev => ({
+      ...prev,
+      departamento: lugar.departamento || prev.departamento,
+      municipio: lugar.ciudad || prev.municipio,
+      sitioVotacion: `${lugar.puesto} - Mesa ${lugar.mesa}` || prev.sitioVotacion
+    }))
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="nombre">Nombre *</Label>
+          <Label htmlFor="cedula">Cédula *</Label>
+          <ValidadorCedula
+            cedula={formData.cedula}
+            onCedulaChange={handleCedulaChange}
+            onValidacion={handleValidacionCedula}
+            onLugarVotacionFound={handleLugarVotacionFound}
+          />
+        </div>
+        <div>
+          <Label htmlFor="nombre">Nombre Completo *</Label>
           <Input
             id="nombre"
             value={formData.nombre}
             onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
             required
-          />
-        </div>
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
         </div>
       </div>
@@ -185,11 +219,11 @@ function VotanteForm({ votante, onSave, onCancel }: {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="colonia">Departamento</Label>
+          <Label htmlFor="departamento">Departamento</Label>
           <Input
-            id="colonia"
-            value={formData.colonia}
-            onChange={(e) => setFormData({ ...formData, colonia: e.target.value })}
+            id="departamento"
+            value={formData.departamento}
+            onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
           />
         </div>
         <div>
@@ -204,19 +238,20 @@ function VotanteForm({ votante, onSave, onCancel }: {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="seccion">Barrio</Label>
+          <Label htmlFor="barrio">Barrio</Label>
           <Input
-            id="seccion"
-            value={formData.seccion}
-            onChange={(e) => setFormData({ ...formData, seccion: e.target.value })}
+            id="barrio"
+            value={formData.barrio}
+            onChange={(e) => setFormData({ ...formData, barrio: e.target.value })}
           />
         </div>
         <div>
-          <Label htmlFor="distrito">Lugar de Votación</Label>
+          <Label htmlFor="sitioVotacion">Sitio de Votación</Label>
           <Input
-            id="distrito"
-            value={formData.distrito}
-            onChange={(e) => setFormData({ ...formData, distrito: e.target.value })}
+            id="sitioVotacion"
+            value={formData.sitioVotacion}
+            onChange={(e) => setFormData({ ...formData, sitioVotacion: e.target.value })}
+            placeholder="Ej: Puesto 123 - Mesa 5"
           />
         </div>
       </div>
@@ -295,8 +330,8 @@ function ImportExcel({ onImportSuccess }: { onImportSuccess: () => void }) {
         
         // Crear contenido CSV simple para descarga
         const csvContent = [
-          data.columnas.join(','),
-          ...data.ejemplo.map((row: string[]) => row.join(','))
+          'cedula,nombre,email,telefono,whatsapp,instagram,edad,genero,estado,departamento,municipio,barrio,sitioVotacion,ocupacion,nivelEstudio,intereses,notas',
+          '801234567,Juan Pérez,juan@email.com,3001234567,3001234567,@juanperez,25,masculino,simpatizante,Cundinamarca,Bogotá,Chapinero,Puesto 123 - Mesa 5,Estudiante,Universidad,Política,Deportes,Votante comprometido'
         ].join('\n')
         
         const blob = new Blob([csvContent], { type: 'text/csv' })
@@ -356,7 +391,7 @@ function ImportExcel({ onImportSuccess }: { onImportSuccess: () => void }) {
           <h4 className="font-medium text-blue-800 mb-2">Instrucciones:</h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Descarga el modelo de Excel para asegurar el formato correcto</li>
-            <li>• La columna "nombre" es obligatoria</li>
+            <li>• Las columnas "cedula" y "nombre" son obligatorias</li>
             <li>• Puedes dejar las demás columnas vacías si no tienes la información</li>
             <li>• Los estados válidos son: potencial, simpatizante, voluntario, indeciso</li>
           </ul>
@@ -378,7 +413,7 @@ function ImportExcel({ onImportSuccess }: { onImportSuccess: () => void }) {
             <Input
               id="file"
               type="file"
-              accept=".xlsx,.xls"
+              accept=".xlsx,.xls,.csv"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               className="mt-2"
             />
@@ -515,7 +550,7 @@ function MensajeriaMasiva({ votantes }: { votantes: Votante[] }) {
                   id="asunto"
                   value={asunto}
                   onChange={(e) => setAsunto(e.target.value)}
-                  placeholder="Asunto del email"
+                  placeholder="Asunto del correo"
                 />
               </div>
             )}
@@ -530,7 +565,7 @@ function MensajeriaMasiva({ votantes }: { votantes: Votante[] }) {
                 rows={6}
               />
               <div className="text-sm text-gray-500 mt-2">
-                Variables disponibles: {'{nombre}'}, {'{email}'}, {'{telefono}'}, {'{whatsapp}'}, {'{edad}'}, {'{genero}'}, {'{departamento}'}, {'{municipio}'}, {'{barrio}'}, {'{sitioVotacion}'}, {'{ocupación}'}, {'{nivelEstudio}'}
+                Variables disponibles: {'{nombre}'}, {'{email}'}, {'{telefono}'}, {'{whatsapp}'}, {'{edad}'}, {'{género}'}, {'{departamento}'}, {'{municipio}'}, {'{barrio}'}, {'{sitioVotacion}'}, {'{ocupación}'}, {'{nivelEstudio}'}
               </div>
             </div>
 
@@ -574,7 +609,7 @@ function MensajeriaMasiva({ votantes }: { votantes: Votante[] }) {
                   <div className="flex-1">
                     <p className="font-medium">{votante.nombre}</p>
                     <p className="text-sm text-gray-600">
-                      {votante.municipio} - Barrio {votante.seccion}
+                      {votante.municipio} - Barrio {votante.barrio}
                     </p>
                   </div>
                   <Badge variant={
@@ -687,7 +722,7 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">Gestión de Votantes</h2>
-          <p className="text-gray-600">Base de datos de electores</p>
+          <p className="text-gray-600">Base de datos de electores con validación de cédula</p>
         </div>
         <div className="flex space-x-3">
           <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
@@ -716,6 +751,9 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
                   <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        Cédula
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                         Votante
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
@@ -725,7 +763,7 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
                         Ubicación
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                        Perfil
+                        Lugar Votación
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                         Estado
@@ -738,6 +776,9 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
                   <tbody className="bg-white divide-y divide-gray-200">
                     {votantes.map((votante) => (
                       <tr key={votante.id} className="hover:bg-blue-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{votante.cedula}</div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{votante.nombre}</div>
                           <div className="text-sm text-gray-500">
@@ -752,11 +793,15 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{votante.municipio || 'N/A'}</div>
-                          <div className="text-sm text-gray-500">Barrio {votante.seccion || 'N/A'}</div>
+                          <div className="text-sm text-gray-500">Barrio {votante.barrio || 'N/A'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{votante.ocupacion || 'N/A'}</div>
-                          <div className="text-sm text-gray-500">{votante.nivelEstudio || 'N/A'}</div>
+                          <div className="text-sm text-gray-900">{votante.sitioVotacion || 'N/A'}</div>
+                          {votante.lugarVotacion && (
+                            <div className="text-xs text-blue-600">
+                              Validado ✅
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Badge 
@@ -779,81 +824,16 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="text-green-600 border-green-600 hover:bg-green-50"
-                              onClick={() => {
-                                // Aquí va el código para enviar WhatsApp
-                                const votanteId = votante.id
-                                const mensaje = `Hola ${votante.nombre}, ¿cómo estás?`
-                                
-                                fetch('/api/whatsapp', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ votanteId, mensaje })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                  if (data.success) {
-                                    alert('Mensaje de WhatsApp enviado')
-                                  } else {
-                                    alert('Error: ' + data.error)
-                                  }
-                                })
-                              }}
+                              onClick={() => handleEdit(votante)}
                             >
-                              <MessageSquare className="h-4 w-4" />
+                              <Edit className="h-3 w-3" />
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                              onClick={() => {
-                                // Aquí va el código para enviar Email
-                                const votanteId = votante.id
-                                const asunto = 'Información importante'
-                                const mensaje = `<h1>Hola ${votante.nombre}</h1><p>Te enviamos información importante</p>`
-                                
-                                fetch('/api/email', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ votanteId, asunto, mensaje })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                  if (data.success) {
-                                    alert('Email enviado')
-                                  } else {
-                                    alert('Error: ' + data.error)
-                                  }
-                                })
-                              }}
+                              onClick={() => handleDelete(votante.id)}
                             >
-                              <Mail className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="text-purple-600 border-purple-600 hover:bg-purple-50"
-                              onClick={() => {
-                                // Aquí va el código para enviar SMS
-                                const votanteId = votante.id
-                                const mensaje = `Hola ${votante.nombre}, mensaje importante`
-                                
-                                fetch('/api/sms', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ votanteId, mensaje })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                  if (data.success) {
-                                    alert('SMS enviado')
-                                  } else {
-                                    alert('Error: ' + data.error)
-                                  }
-                                })
-                              }}
-                            >
-                              <Phone className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </td>
@@ -904,7 +884,7 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
             <DialogDescription>
               {editingVotante 
                 ? 'Edita la información del votante seleccionado'
-                : 'Completa el formulario para agregar un nuevo votante'
+                : 'Completa el formulario para agregar un nuevo votante. La cédula se validará en tiempo real.'
               }
             </DialogDescription>
           </DialogHeader>

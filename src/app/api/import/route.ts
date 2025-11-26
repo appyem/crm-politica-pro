@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     // Por ahora, simulamos la lectura y procesamiento
     const mockVotantes = [
       {
+        cedula: '123456789', // ✅ Agregado
         nombre: 'Juan Pérez',
         email: 'juan@email.com',
         telefono: '555-123-4567',
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
         nivelEstudio: 'universidad'
       },
       {
+        cedula: '987654321', // ✅ Agregado
         nombre: 'María García',
         email: 'maria@email.com',
         telefono: '555-987-6543',
