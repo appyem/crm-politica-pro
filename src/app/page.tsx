@@ -328,7 +328,7 @@ export default function PoliticalCRM() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">CRM Político Pro</h1>
-                <p className="text-blue-100 text-sm">Gestión de Campañas Estratégicas</p>
+                <p className="text-blue-100 text-sm">Gestión de Campañas Estratégicas Appyempresa S.A.S</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
