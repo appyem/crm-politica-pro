@@ -1083,17 +1083,17 @@ export default function PoliticalCRM() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
-                <Input id="fechaInicio" type="date" defaultValue={editingCampana?.fechaInicio} />
+                <Input id="fechaInicio" type="date" defaultValue={editingCampana?.fechaInicio?.split('T')[0]} />
               </div>
               <div>
                 <Label htmlFor="fechaFin">Fecha de Fin</Label>
-                <Input id="fechaFin" type="date" defaultValue={editingCampana?.fechaFin} />
+                <Input id="fechaFin" type="date" defaultValue={editingCampana?.fechaFin?.split('T')[0]} />
               </div>
             </div>
             <div>
               <Label htmlFor="estado">Estado</Label>
               <Select defaultValue={editingCampana?.estado || 'activa'}>
-                <SelectTrigger>
+                <SelectTrigger id="estado">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1108,7 +1108,28 @@ export default function PoliticalCRM() {
                 <X className="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
-              <Button onClick={() => handleSaveCampana({})}>
+              <Button onClick={async () => {
+                const nombre = (document.getElementById('nombre') as HTMLInputElement)?.value
+                const objetivo = (document.getElementById('objetivo') as HTMLInputElement)?.value
+                const descripcion = (document.getElementById('descripcion') as HTMLTextAreaElement)?.value
+                const fechaInicio = (document.getElementById('fechaInicio') as HTMLInputElement)?.value
+                const fechaFin = (document.getElementById('fechaFin') as HTMLInputElement)?.value
+                const estadoValue = (document.getElementById('estado') as HTMLSelectElement)?.value || 'activa'
+                
+                // ✅ Conversión segura al literal type
+                const estado = estadoValue as 'activa' | 'pausada' | 'finalizada'
+
+                const data = {
+                  nombre,
+                  objetivo: objetivo || '',
+                  descripcion: descripcion || '',
+                  fechaInicio,
+                  fechaFin,
+                  estado,
+                  mensajesEnviados: 0
+                }
+                await handleSaveCampana(data)
+              }}>
                 <Save className="h-4 w-4 mr-2" />
                 {editingCampana ? 'Actualizar' : 'Crear'}
               </Button>
@@ -1135,7 +1156,7 @@ export default function PoliticalCRM() {
               <div>
                 <Label htmlFor="tipo">Tipo de Evento</Label>
                 <Select defaultValue={editingEvento?.tipo || 'reunion'}>
-                  <SelectTrigger>
+                  <SelectTrigger id="tipo">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1154,7 +1175,7 @@ export default function PoliticalCRM() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="fecha">Fecha</Label>
-                <Input id="fecha" type="date" defaultValue={editingEvento?.fecha} />
+                <Input id="fecha" type="date" defaultValue={editingEvento?.fecha?.split('T')[0]} />
               </div>
               <div>
                 <Label htmlFor="hora">Hora</Label>
@@ -1168,7 +1189,7 @@ export default function PoliticalCRM() {
             <div>
               <Label htmlFor="estado">Estado</Label>
               <Select defaultValue={editingEvento?.estado || 'programado'}>
-                <SelectTrigger>
+                <SelectTrigger id="estado">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1184,7 +1205,31 @@ export default function PoliticalCRM() {
                 <X className="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
-              <Button onClick={() => handleSaveEvento({})}>
+              <Button onClick={async () => {
+                const titulo = (document.getElementById('titulo') as HTMLInputElement)?.value
+                const tipoValue = (document.getElementById('tipo') as HTMLSelectElement)?.value || 'reunion'
+                const descripcion = (document.getElementById('descripcion') as HTMLTextAreaElement)?.value
+                const fecha = (document.getElementById('fecha') as HTMLInputElement)?.value
+                const hora = (document.getElementById('hora') as HTMLInputElement)?.value
+                const ubicacion = (document.getElementById('ubicacion') as HTMLInputElement)?.value
+                const estadoValue = (document.getElementById('estado') as HTMLSelectElement)?.value || 'programado'
+                
+                // ✅ Conversión segura a literal types
+                const tipo = tipoValue as 'reunion' | 'concentracion' | 'debate' | 'visita'
+                const estado = estadoValue as 'programado' | 'en_curso' | 'finalizado' | 'cancelado'
+
+                const data = {
+                  titulo,
+                  tipo,
+                  descripcion: descripcion || '',
+                  fecha,
+                  hora,
+                  ubicacion: ubicacion || '',
+                  estado,
+                  asistentes: []
+                }
+                await handleSaveEvento(data)
+              }}>
                 <Save className="h-4 w-4 mr-2" />
                 {editingEvento ? 'Actualizar' : 'Crear'}
               </Button>
@@ -1211,7 +1256,7 @@ export default function PoliticalCRM() {
               <div>
                 <Label htmlFor="tipo">Tipo de Mensaje</Label>
                 <Select defaultValue={editingPlantilla?.tipo || 'whatsapp'}>
-                  <SelectTrigger>
+                  <SelectTrigger id="tipo">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1242,7 +1287,31 @@ export default function PoliticalCRM() {
                 <X className="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
-              <Button onClick={() => handleSavePlantilla({})}>
+              <Button onClick={async () => {
+                const nombre = (document.getElementById('nombre') as HTMLInputElement)?.value
+                const tipoValue = (document.getElementById('tipo') as HTMLSelectElement)?.value || 'whatsapp'
+                const asunto = (document.getElementById('asunto') as HTMLInputElement)?.value
+                const contenido = (document.getElementById('contenido') as HTMLTextAreaElement)?.value
+                const variablesInput = (document.getElementById('variables') as HTMLInputElement)?.value || ''
+                
+                // ✅ Conversión segura a literal type
+                const tipo = tipoValue as 'whatsapp' | 'email' | 'sms'
+                
+                // Parsear variables
+                const variables = variablesInput
+                  .split(',')
+                  .map(v => v.trim())
+                  .filter(v => v.length > 0)
+
+                const data = {
+                  nombre,
+                  tipo,
+                  asunto: asunto || undefined,
+                  contenido: contenido || '',
+                  variables
+                }
+                await handleSavePlantilla(data)
+              }}>
                 <Save className="h-4 w-4 mr-2" />
                 {editingPlantilla ? 'Actualizar' : 'Crear'}
               </Button>
