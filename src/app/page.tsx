@@ -1213,8 +1213,8 @@ export default function PoliticalCRM() {
                 const hora = (document.getElementById('hora') as HTMLInputElement)?.value
                 const ubicacion = (document.getElementById('ubicacion') as HTMLInputElement)?.value
                 const estadoValue = (document.getElementById('estado') as HTMLSelectElement)?.value || 'programado'
-                
-                // ✅ Conversión segura a literal types
+
+                // Conversión segura a tipos literales
                 const tipo = tipoValue as 'reunion' | 'concentracion' | 'debate' | 'visita'
                 const estado = estadoValue as 'programado' | 'en_curso' | 'finalizado' | 'cancelado'
 
@@ -1238,7 +1238,7 @@ export default function PoliticalCRM() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal para Plantillas */}
+     {/* Modal para Plantillas */}
       <Dialog open={showPlantillaForm} onOpenChange={setShowPlantillaForm}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -1293,10 +1293,10 @@ export default function PoliticalCRM() {
                 const asunto = (document.getElementById('asunto') as HTMLInputElement)?.value
                 const contenido = (document.getElementById('contenido') as HTMLTextAreaElement)?.value
                 const variablesInput = (document.getElementById('variables') as HTMLInputElement)?.value || ''
-                
-                // ✅ Conversión segura a literal type
+
+                // Conversión segura a tipo literal
                 const tipo = tipoValue as 'whatsapp' | 'email' | 'sms'
-                
+
                 // Parsear variables
                 const variables = variablesInput
                   .split(',')
