@@ -86,32 +86,25 @@ function VotanteForm({ votante, onSave, onCancel }: {
     notas: votante?.notas || ''
   })
 
-  const [validacionCedula, setValidacionCedula] = useState<any>(null)
+  
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validar que la cédula sea válida
-    if (!validacionCedula?.existe && formData.cedula) {
-      alert('Por favor valide la cédula antes de guardar el votante')
-      return
-    }
-
     onSave({
       ...formData,
       edad: formData.edad ? parseInt(formData.edad) : undefined,
-      // No enviamos lugarVotacion como objeto; los campos se manejan individualmente si es necesario
     })
   }
 
   const handleCedulaChange = (cedula: string) => {
     setFormData({ ...formData, cedula })
     // Limpiar validación anterior
-    setValidacionCedula(null)
+    
   }
 
   const handleValidacionCedula = (validacion: any) => {
-    setValidacionCedula(validacion)
+    
   }
 
   
@@ -119,15 +112,16 @@ function VotanteForm({ votante, onSave, onCancel }: {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="cedula">Cédula *</Label>
-          <ValidadorCedula
-            cedula={formData.cedula}
-            onCedulaChange={handleCedulaChange}
-            onValidacion={handleValidacionCedula}
-            
-          />
-        </div>
+       <div>
+        <Label htmlFor="cedula">Cédula *</Label>
+        <Input
+          id="cedula"
+          value={formData.cedula}
+          onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
+          placeholder="Ingrese número de cédula"
+          required
+        />
+      </div>
         <div>
           <Label htmlFor="nombre">Nombre Completo *</Label>
           <Input
