@@ -28,37 +28,37 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
-// Modelo principal: Votantes
 model Votante {
-  id                 String   @id @default(cuid())
-  cedula             String   @unique
-  nombre             String
-  email              String?
-  telefono           String?
-  whatsapp           String?
-  instagram          String?
-  edad               Int?
-  genero             String?
-  estado             String   @default("potencial")
-  departamento       String?
-  municipio          String?
-  barrio             String?
+  id              String   @id @default(cuid())
+  cedula          String   @unique
+  nombre          String
+  email           String?
+  telefono        String?
+  whatsapp        String?
+  instagram       String?
+  edad            Int?
+  genero          String?
+  estado          String   @default("potencial")
+  departamento    String?
+  municipio       String?
+  barrio          String?
 
-  // Lugar de votación detallado (NO usar sitioVotacion)
+  // Lugar de votación
   lugarCiudad        String?
   lugarPuesto        String?
   lugarMesa          String?
   lugarDireccion     String?
   lugarDepartamento  String?
 
-  ocupacion          String?
-  nivelEstudio       String?
-  intereses          String?
-  notas              String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  ocupacion       String?
+  nivelEstudio    String?
+  intereses       String?
+  notas           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  mensajes           Mensaje[]
+  mensajes        Mensaje[]
+  inscripciones   Inscripcion[] // ← Añadido
 }
 
 // Modelo para Campañas Políticas
@@ -77,9 +77,8 @@ model Campana {
   mensajes         Mensaje[]
 }
 
-// Modelo para Eventos Políticos
 model Evento {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   titulo     String
   descripcion String?
   fecha      DateTime
@@ -90,6 +89,8 @@ model Evento {
   asistentes String?  // JSON string
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  inscripciones Inscripcion[] // ← Añadido
 }
 
 // Modelo para Plantillas de Mensaje
@@ -120,4 +121,17 @@ model Mensaje {
 
   votante Votante @relation(fields: [votanteId], references: [id])
   campana Campana? @relation(fields: [campanaId], references: [id])
+}
+
+model Inscripcion {
+  id        String   @id @default(cuid())
+  eventoId  String
+  liderId   String
+  nombre    String
+  cedula    String   @unique
+  telefono  String
+  createdAt DateTime @default(now())
+
+  evento Evento  @relation(fields: [eventoId], references: [id])
+  lider  Votante @relation(fields: [liderId], references: [id])
 }
