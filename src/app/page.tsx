@@ -124,6 +124,26 @@ export default function PoliticalCRM() {
   const [editingCampana, setEditingCampana] = useState<Campana | undefined>()
   const [editingEvento, setEditingEvento] = useState<Evento | undefined>()
   const [editingPlantilla, setEditingPlantilla] = useState<Plantilla | undefined>()
+  // Estados para mensajería masiva
+  const [filtroEstadoMensajeria, setFiltroEstadoMensajeria] = useState('todos')
+  const [busquedaMensajeria, setBusquedaMensajeria] = useState('')
+  const [votantesSeleccionados, setVotantesSeleccionados] = useState<Set<string>>(new Set())
+  const [plataformaMensajeria, setPlataformaMensajeria] = useState('whatsapp')
+  const [asuntoMensajeria, setAsuntoMensajeria] = useState('')
+  const [mensajeMensajeria, setMensajeMensajeria] = useState('')
+
+
+  // Votantes filtrados para mensajería
+  const votantesFiltradosMensajeria = votantes.filter(votante => {
+    const coincideEstado = filtroEstadoMensajeria === 'todos' || votante.estado === filtroEstadoMensajeria
+    const coincideBusqueda = !busquedaMensajeria ||
+      votante.nombre.toLowerCase().includes(busquedaMensajeria.toLowerCase()) ||
+      votante.cedula.includes(busquedaMensajeria)
+    return coincideEstado && coincideBusqueda
+  })
+
+
+
 
   useEffect(() => {
     fetchVotantes()
@@ -399,6 +419,46 @@ const stats = [
       }
     } catch (error) {
       console.error('Error deleting plantilla:', error)
+    }
+  }
+
+
+  // Función para enviar mensajes masivos
+  const handleEnviarMensajes = async () => {
+    if (votantesSeleccionados.size === 0 || !mensajeMensajeria.trim()) {
+      alert('Selecciona votantes y escribe un mensaje')
+      return
+    }
+
+    const confirmacion = confirm(`¿Estás seguro de enviar el mensaje a ${votantesSeleccionados.size} votantes?`)
+    if (!confirmacion) return
+
+    try {
+      const response = await fetch('/api/mensajes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plataforma: plataformaMensajeria,
+          mensaje: mensajeMensajeria,
+          asunto: plataformaMensajeria === 'email' ? asuntoMensajeria : undefined,
+          votantesSeleccionados: Array.from(votantesSeleccionados)
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(`✅ ${result.message}`)
+        // Opcional: limpiar selección y mensaje
+        setVotantesSeleccionados(new Set())
+        setMensajeMensajeria('')
+        setAsuntoMensajeria('')
+      } else {
+        const error = await response.json()
+        alert(`❌ Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error al enviar mensajes:', error)
+      alert('Error al enviar mensajes')
     }
   }
 
@@ -948,88 +1008,191 @@ const stats = [
             <div className="space-y-6">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">Mensajería Masiva</h2>
-                <p className="text-gray-600">Comunicación directa con votantes</p>
+                <p className="text-gray-600">Envía mensajes personalizados a tus votantes</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Panel de selección de votantes */}
                 <Card className="lg:col-span-2">
                   <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Send className="h-5 w-5 mr-2 text-blue-600" />
-                      Nueva Campaña de Mensajes
-                    </CardTitle>
-                    <CardDescription>
-                      Envía mensajes personalizados a múltiples plataformas
-                    </CardDescription>
+                    <CardTitle>Filtrar y Seleccionar Votantes</CardTitle>
+                    <CardDescription>Elige a quiénes enviar el mensaje</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button className="bg-green-600 hover:bg-green-700 h-20 flex-col">
-                        <MessageSquare className="h-6 w-6 mb-2" />
-                        WhatsApp
+                    {/* Filtros */}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoMensajeria === 'todos' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoMensajeria('todos')}
+                      >
+                        Todos
                       </Button>
-                      <Button variant="outline" className="h-20 flex-col border-blue-600 text-blue-600 hover:bg-blue-50">
-                        <Mail className="h-6 w-6 mb-2" />
-                        Email
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoMensajeria === 'potencial' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoMensajeria('potencial')}
+                      >
+                        Potenciales
                       </Button>
-                      <Button variant="outline" className="h-20 flex-col border-purple-600 text-purple-600 hover:bg-purple-50">
-                        <Phone className="h-6 w-6 mb-2" />
-                        SMS
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoMensajeria === 'simpatizante' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoMensajeria('simpatizante')}
+                      >
+                        Simpatizantes
                       </Button>
-                      <Button variant="outline" className="h-20 flex-col border-pink-600 text-pink-600 hover:bg-pink-50">
-                        <Users className="h-6 w-6 mb-2" />
-                        Instagram
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoMensajeria === 'voluntario' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoMensajeria('voluntario')}
+                      >
+                        Voluntarios
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoMensajeria === 'indeciso' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoMensajeria('indeciso')}
+                      >
+                        Indecisos
                       </Button>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Vista Previa del Mensaje:</h4>
-                      <div className="bg-white p-3 rounded border border-gray-200">
-                        <p className="text-sm">
-                          Hola <span className="font-bold text-blue-600">[Nombre]</span>, 
-                          te invitamos a unirte a nuestra campaña por el cambio.
-                        </p>
-                      </div>
+                    {/* Búsqueda por cédula/nombre */}
+                    <Input
+                      placeholder="Buscar por cédula o nombre..."
+                      value={busquedaMensajeria}
+                      onChange={(e) => setBusquedaMensajeria(e.target.value)}
+                    />
+
+                    {/* Lista de votantes */}
+                    <div className="max-h-80 overflow-y-auto border rounded-lg">
+                      {votantesFiltradosMensajeria.length > 0 ? (
+                        <div className="p-2 space-y-2">
+                          {votantesFiltradosMensajeria.map((votante) => (
+                            <div key={votante.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                              <input
+                                type="checkbox"
+                                checked={votantesSeleccionados.has(votante.id)}
+                                onChange={(e) => {
+                                  const newSet = new Set(votantesSeleccionados)
+                                  if (e.target.checked) {
+                                    newSet.add(votante.id)
+                                  } else {
+                                    newSet.delete(votante.id)
+                                  }
+                                  setVotantesSeleccionados(newSet)
+                                }}
+                                className="rounded"
+                              />
+                              <div className="flex-1">
+                                <p className="font-medium">{votante.nombre}</p>
+                                <p className="text-sm text-gray-600">{votante.cedula}</p>
+                              </div>
+                              <Badge variant={
+                                votante.estado === 'simpatizante' ? 'default' :
+                                votante.estado === 'voluntario' ? 'secondary' :
+                                'outline'
+                              }>
+                                {votante.estado}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-center py-4">No hay votantes que coincidan</p>
+                      )}
                     </div>
 
-                    <Button className="w-full bg-red-600 hover:bg-red-700">
-                      <Send className="h-4 w-4 mr-2" />
-                      Enviar Mensaje Masivo
-                    </Button>
+                    {/* Acciones de selección */}
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const ids = new Set(votantesFiltradosMensajeria.map(v => v.id))
+                          setVotantesSeleccionados(ids)
+                        }}
+                      >
+                        Seleccionar Todos ({votantesFiltradosMensajeria.length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setVotantesSeleccionados(new Set())}
+                      >
+                        Limpiar Selección
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 
+                {/* Panel de composición de mensaje */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Estadísticas de Envío</CardTitle>
+                    <CardTitle>Componer Mensaje</CardTitle>
+                    <CardDescription>Personaliza tu mensaje masivo</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm font-medium text-green-800">WhatsApp</span>
-                        <span className="text-lg font-bold text-green-600">
-                          {campanas.reduce((total, c) => total + c.mensajesEnviados, 0)}
-                        </span>
+                  <CardContent className="space-y-4">
+                    {/* Plataforma */}
+                    <div>
+                      <Label>Plataforma</Label>
+                      <Select value={plataformaMensajeria} onValueChange={setPlataformaMensajeria}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                          <SelectItem value="email">Email</SelectItem>
+                          <SelectItem value="sms">SMS</SelectItem>
+                          <SelectItem value="instagram">Instagram</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Asunto (solo para email) */}
+                    {plataformaMensajeria === 'email' && (
+                      <div>
+                        <Label>Asunto</Label>
+                        <Input
+                          value={asuntoMensajeria}
+                          onChange={(e) => setAsuntoMensajeria(e.target.value)}
+                          placeholder="Asunto del correo"
+                        />
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                        <span className="text-sm font-medium text-blue-800">Email</span>
-                        <span className="text-lg font-bold text-blue-600">
-                          {campanas.reduce((total, c) => total + c.mensajesEnviados, 0)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                        <span className="text-sm font-medium text-purple-800">SMS</span>
-                        <span className="text-lg font-bold text-purple-600">
-                          {campanas.reduce((total, c) => total + c.mensajesEnviados, 0)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-pink-50 rounded-lg">
-                        <span className="text-sm font-medium text-pink-800">Instagram</span>
-                        <span className="text-lg font-bold text-pink-600">
-                          {campanas.reduce((total, c) => total + c.mensajesEnviados, 0)}
-                        </span>
+                    )}
+
+                    {/* Contenido del mensaje */}
+                    <div>
+                      <Label>Mensaje</Label>
+                      <Textarea
+                        value={mensajeMensajeria}
+                        onChange={(e) => setMensajeMensajeria(e.target.value)}
+                        placeholder="Escribe tu mensaje. Usa variables como {nombre}, {cedula}, {whatsapp}, etc."
+                        rows={8}
+                      />
+                      <div className="text-xs text-gray-500 mt-1">
+                        Variables disponibles: {'{nombre}'}, {'{cedula}'}, {'{whatsapp}'}, {'{email}'}, {'{telefono}'}, {'{municipio}'}, {'{barrio}'}
                       </div>
                     </div>
+
+                    {/* Vista previa */}
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <Label>Vista Previa</Label>
+                      <div className="mt-2 text-sm bg-white p-2 rounded border">
+                        {mensajeMensajeria.replace(/\{nombre\}/g, '[Nombre]') || 'Escribe un mensaje...'}
+                      </div>
+                    </div>
+
+                    {/* Botón de envío */}
+                    <Button
+                      className="w-full bg-red-600 hover:bg-red-700"
+                      onClick={handleEnviarMensajes}
+                      disabled={votantesSeleccionados.size === 0 || !mensajeMensajeria.trim()}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Enviar a {votantesSeleccionados.size} votantes
+                    </Button>
                   </CardContent>
                 </Card>
               </div>

@@ -115,8 +115,7 @@ export async function POST(request: NextRequest) {
             tipo,
             asunto: asunto || null,
             contenido: mensajePersonalizado,
-            estado: 'enviado',
-            fechaEnvio: new Date()
+            estado: 'enviado'
           }
         })
 
