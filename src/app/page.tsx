@@ -845,38 +845,6 @@ const stats = [
                   </CardContent>
                 </Card>
               )}
-
-
-
-              {/* Top 5 Líderes Detalle */}
-              {lideresArray.length > 0 && (
-                <Card className="mt-4 border-purple-200">
-                  <CardHeader>
-                    <CardTitle className="text-purple-900">🏆 Top 5 Líderes con Más Confirmaciones</CardTitle>
-                    <CardDescription className="text-purple-700">
-                      Líderes que han traído más simpatizantes a reuniones
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {lideresArray.map((lider, index) => (
-                        <div key={lider.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">
-                              {index + 1}
-                            </div>
-                            <span className="font-medium text-gray-900">{lider.nombre}</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-purple-700">{lider.count} inscritos</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
             </div>
           )}
 
@@ -1428,32 +1396,7 @@ const stats = [
             </div>
 
 
-            {/* Selector de líder para enlace de inscripción */}
-            <div>
-              <Label htmlFor="lider">Líder (Potencial)</Label>
-              <Select
-                defaultValue={editingEvento?.liderId || ''}
-                onValueChange={(value) => {
-                  const input = document.getElementById('liderId') as HTMLInputElement;
-                  if (input) input.value = value;
-                }}
-              >
-                <SelectTrigger id="lider">
-                  <SelectValue placeholder="Seleccione un líder" />
-                </SelectTrigger>
-                <SelectContent>
-                  {votantes
-                    .filter(v => v.estado === 'potencial')
-                    .map(lider => (
-                      <SelectItem key={lider.id} value={lider.id}>
-                        {lider.nombre} ({lider.cedula})
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              {/* Campo oculto para guardar el valor */}
-              <input type="hidden" id="liderId" defaultValue={editingEvento?.liderId || ''} />
-            </div>
+            
 
             {/* Botones de enlace de inscripción */}
             {editingEvento?.id && (
