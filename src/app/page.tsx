@@ -239,6 +239,64 @@ const stats = [
   const campanasActivas = campanas.filter(c => c.estado === 'activa')
   const eventosProximos = eventos.filter(e => e.estado === 'programado').slice(0, 3)
 
+  // Calcular tasa de conversión de indecisos a simpatizantes
+  const indecisos = votantes.filter(v => v.estado === 'indeciso').length
+  const simpatizantes = votantes.filter(v => v.estado === 'simpatizante').length
+  const tasaConversionIndecisos = indecisos > 0 ? Math.round((simpatizantes / (indecisos + simpatizantes)) * 100) : 0
+
+  // Métrica: Votantes listos para movilizar
+  const votantesListos = votantes.filter(v => 
+    v.cedula && 
+    v.whatsapp && 
+    v.municipio && 
+    v.barrio && 
+    v.lugarPuesto
+  ).length
+
+  const porcentajeListos = Math.round(
+    (votantesListos / Math.max(votantes.length, 1)) * 100
+  )
+
+  // Métrica: Total de inscritos a reuniones
+  const totalInscritos = eventos.reduce((total, evento) => {
+    return total + (evento.totalInscritos || 0)
+  }, 0)
+
+
+  // Métrica: Top 5 líderes con más confirmaciones
+  const lideresMap = new Map<string, { id: string; nombre: string; count: number }>()
+
+  // Recorrer todos los eventos e inscripciones
+  eventos.forEach(evento => {
+    if (evento.inscripciones) {
+      evento.inscripciones.forEach(inscripcion => {
+        const liderId = inscripcion.liderId
+        if (liderId) {
+          if (!lideresMap.has(liderId)) {
+            // Buscar el nombre del líder en la lista de votantes
+            const liderVotante = votantes.find(v => v.id === liderId)
+            lideresMap.set(liderId, {
+              id: liderId,
+              nombre: liderVotante?.nombre || 'Líder desconocido',
+              count: 0
+            })
+          }
+          const current = lideresMap.get(liderId)!
+          lideresMap.set(liderId, { ...current, count: current.count + 1 })
+        }
+      })
+    }
+  })
+
+  // Convertir a array y ordenar
+  const lideresArray = Array.from(lideresMap.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+
+  const totalLideresActivos = lideresArray.length
+
+  
+
   // Funciones para manejar campañas
   const handleSaveCampana = async (campanaData: Partial<Campana>) => {
     try {
@@ -345,9 +403,9 @@ const stats = [
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-red-50">
       {/* Header Político Moderno */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+      <header className="bg-linear-to-r from-blue-600 to-blue-800 text-white shadow-lg">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -377,7 +435,7 @@ const stats = [
         {/* Sidebar Moderno */}
         <aside className="w-64 bg-white shadow-xl min-h-screen border-r border-gray-100">
           <div className="p-4">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 mb-6 text-white">
+            <div className="bg-linear-to-r from-blue-500 to-purple-600 rounded-lg p-4 mb-6 text-white">
               <h3 className="font-bold text-lg">Panel de Control</h3>
               <p className="text-sm opacity-90">Gestiona tu campaña</p>
             </div>
@@ -723,7 +781,7 @@ const stats = [
               </div>
 
               {/* Métricas de Campaña */}
-              <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+              <Card className="bg-linear-to-r from-blue-50 to-purple-50 border-blue-200">
                 <CardHeader>
                   <CardTitle className="text-blue-900">Resumen de Campaña</CardTitle>
                   <CardDescription className="text-blue-700">
@@ -731,34 +789,63 @@ const stats = [
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Tasa de conversión de indecisos */}
                     <div className="text-center p-4 bg-white rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {Math.round((votantes.filter(v => v.estado === 'simpatizante').length / Math.max(votantes.length, 1)) * 100)}%
-                      </div>
-                      <p className="text-sm text-gray-600">Tasa de Conversión</p>
+                      <div className="text-2xl font-bold text-blue-600">{tasaConversionIndecisos}%</div>
+                      <p className="text-sm text-gray-600">Indecisos → Simpatizantes (esta semana)</p>
                     </div>
+
+                    {/* Votantes listos para movilizar */}
                     <div className="text-center p-4 bg-white rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">
-                        {votantes.filter(v => v.edad && v.edad >= 18 && v.edad <= 35).length}
-                      </div>
-                      <p className="text-sm text-gray-600">Jóvenes (18-35)</p>
+                      <div className="text-2xl font-bold text-green-600">{porcentajeListos}%</div>
+                      <p className="text-sm text-gray-600">Listos para Movilizar</p>
                     </div>
+
+                    {/* Total inscritos */}
                     <div className="text-center p-4 bg-white rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">
-                        {votantes.filter(v => v.genero === 'femenino').length}
-                      </div>
-                      <p className="text-sm text-gray-600">Votantes Mujeres</p>
+                      <div className="text-2xl font-bold text-orange-600">{totalInscritos}</div>
+                      <p className="text-sm text-gray-600">Inscritos a Reuniones</p>
                     </div>
+
+                    {/* Top 5 líderes */}
                     <div className="text-center p-4 bg-white rounded-lg">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {votantes.filter(v => v.lugarPuesto).length}
-                      </div>
-                      <p className="text-sm text-gray-600">Con Sitio de Votación</p>
+                      <div className="text-2xl font-bold text-purple-600">{totalLideresActivos}</div>
+                      <p className="text-sm text-gray-600">Líderes Activos</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Top 5 Líderes Detalle */}
+              {lideresArray.length > 0 && (
+                <Card className="mt-4 border-purple-200">
+                  <CardHeader>
+                    <CardTitle className="text-purple-900">🏆 Top 5 Líderes con Más Confirmaciones</CardTitle>
+                    <CardDescription className="text-purple-700">
+                      Líderes que han traído más simpatizantes a reuniones
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {lideresArray.map((lider, index) => (
+                        <div key={lider.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">
+                              {index + 1}
+                            </div>
+                            <span className="font-medium text-gray-900">{lider.nombre}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-purple-700">{lider.count} inscritos</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
             </div>
           )}
 
