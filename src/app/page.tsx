@@ -85,6 +85,7 @@ interface Evento {
   estado: 'programado' | 'en_curso' | 'finalizado' | 'cancelado'
   asistentes: string[]
   createdAt: string
+  liderId?: string
 }
 
 interface Plantilla {
@@ -1198,6 +1199,128 @@ export default function PoliticalCRM() {
                 </SelectContent>
               </Select>
             </div>
+
+
+
+            {/* Selector de líder para enlace de inscripción */}
+            <div>
+              <Label htmlFor="lider">Líder (Potencial)</Label>
+              <Select
+                defaultValue={editingEvento?.liderId || ''}
+                onValueChange={(value) => {
+                  const input = document.getElementById('liderId') as HTMLInputElement;
+                  if (input) input.value = value;
+                }}
+              >
+                <SelectTrigger id="lider">
+                  <SelectValue placeholder="Seleccione un líder" />
+                </SelectTrigger>
+                <SelectContent>
+                  {votantes
+                    .filter(v => v.estado === 'potencial')
+                    .map(lider => (
+                      <SelectItem key={lider.id} value={lider.id}>
+                        {lider.nombre} ({lider.cedula})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {/* Campo oculto para guardar el valor */}
+              <input type="hidden" id="liderId" defaultValue={editingEvento?.liderId || ''} />
+            </div>
+
+
+            {/* Selector de líder para enlace de inscripción */}
+            <div>
+              <Label htmlFor="lider">Líder (Potencial)</Label>
+              <Select
+                defaultValue={editingEvento?.liderId || ''}
+                onValueChange={(value) => {
+                  const input = document.getElementById('liderId') as HTMLInputElement;
+                  if (input) input.value = value;
+                }}
+              >
+                <SelectTrigger id="lider">
+                  <SelectValue placeholder="Seleccione un líder" />
+                </SelectTrigger>
+                <SelectContent>
+                  {votantes
+                    .filter(v => v.estado === 'potencial')
+                    .map(lider => (
+                      <SelectItem key={lider.id} value={lider.id}>
+                        {lider.nombre} ({lider.cedula})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {/* Campo oculto para guardar el valor */}
+              <input type="hidden" id="liderId" defaultValue={editingEvento?.liderId || ''} />
+            </div>
+
+            {/* Botones de enlace de inscripción */}
+            {editingEvento?.id && (
+              <div className="pt-4">
+                <Label>Enlace de inscripción</Label>
+                <div className="flex space-x-2 pt-2">
+                  <Input 
+                    id="enlaceInscripcion" 
+                    readOnly 
+                    placeholder="Guarde el evento y seleccione un líder para generar el enlace"
+                  />
+                  <Button 
+                    type="button"
+                    onClick={() => {
+                      const eventoId = editingEvento.id;
+                      const liderId = (document.getElementById('liderId') as HTMLInputElement)?.value;
+                      if (!eventoId || !liderId) {
+                        alert('Debe seleccionar un líder primero');
+                        return;
+                      }
+                      const url = `${window.location.origin}/inscripcion?evento=${eventoId}&lider=${liderId}`;
+                      const input = document.getElementById('enlaceInscripcion') as HTMLInputElement;
+                      input.value = url;
+                      navigator.clipboard.writeText(url);
+                      alert('Enlace copiado al portapapeles');
+                    }}
+                  >
+                    Generar Enlace
+                  </Button>
+                </div>
+                
+                <div className="pt-2">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const enlace = (document.getElementById('enlaceInscripcion') as HTMLInputElement)?.value;
+                      if (!enlace) {
+                        alert('Genere el enlace primero');
+                        return;
+                      }
+                      
+                      const liderId = (document.getElementById('liderId') as HTMLInputElement)?.value;
+                      const lider = votantes.find(v => v.id === liderId);
+                      if (!lider?.whatsapp) {
+                        alert('El líder no tiene número de WhatsApp registrado');
+                        return;
+                      }
+                      
+                      const telefono = lider.whatsapp.replace(/\D/g, '');
+                      const mensaje = encodeURIComponent(
+                        `Hola ${lider.nombre},\n\nTe comparto el enlace para que invites a tus simpatizantes a la reunión:\n\n${enlace}`
+                      );
+                      
+                      window.open(`https://web.whatsapp.com/send?phone=${telefono}&text=${mensaje}`, '_blank');
+                    }}
+                  >
+                    Enviar por WhatsApp
+                  </Button>
+                </div>
+              </div>
+            )}
+
+
+
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowEventoForm(false)}>
                 <X className="h-4 w-4 mr-2" />
@@ -1211,11 +1334,10 @@ export default function PoliticalCRM() {
                 const hora = (document.getElementById('hora') as HTMLInputElement)?.value
                 const ubicacion = (document.getElementById('ubicacion') as HTMLInputElement)?.value
                 const estadoValue = (document.getElementById('estado') as HTMLSelectElement)?.value || 'programado'
-
+                const liderId = (document.getElementById('liderId') as HTMLInputElement)?.value || null
                 // Conversión segura a tipos literales
                 const tipo = tipoValue as 'reunion' | 'concentracion' | 'debate' | 'visita'
                 const estado = estadoValue as 'programado' | 'en_curso' | 'finalizado' | 'cancelado'
-
                 const data = {
                   titulo,
                   tipo,
@@ -1224,7 +1346,8 @@ export default function PoliticalCRM() {
                   hora,
                   ubicacion: ubicacion || '',
                   estado,
-                  asistentes: []
+                  asistentes: [],
+                  ...(liderId && { liderId }) // Solo incluir si existe
                 }
                 await handleSaveEvento(data)
               }}>
