@@ -30,7 +30,8 @@ import {
   Save,
   X,
   Filter,
-  Search
+  Search,
+  HelpCircle
 } from 'lucide-react'
 import VotantesManager from '@/components/VotantesManager'
 
@@ -182,40 +183,56 @@ export default function PoliticalCRM() {
   }
 
   // Calcular estadísticas políticas
-  const stats = [
-    { 
-      title: 'Total Votantes', 
-      value: votantes.length.toString(), 
-      icon: Users, 
-      change: '+15%', 
-      positive: true,
-      color: 'bg-blue-500'
-    },
-    { 
-      title: 'Simpatizantes', 
-      value: votantes.filter(v => v.estado === 'simpatizante').length.toString(), 
-      icon: Star, 
-      change: '+8%', 
-      positive: true,
-      color: 'bg-green-500'
-    },
-    { 
-      title: 'Voluntarios', 
-      value: votantes.filter(v => v.estado === 'voluntario').length.toString(), 
-      icon: Target, 
-      change: '+12%', 
-      positive: true,
-      color: 'bg-purple-500'
-    },
-    { 
-      title: 'Mensajes Enviados', 
-      value: campanas.reduce((total, c) => total + c.mensajesEnviados, 0).toString(), 
-      icon: Send, 
-      change: '+23%', 
-      positive: true,
-      color: 'bg-orange-500'
-    }
-  ]
+const stats = [
+  {
+    title: 'Total Votantes',
+    value: votantes.length.toString(),
+    icon: Users,
+    change: '+15%',
+    positive: true,
+    color: 'bg-blue-500'
+  },
+  {
+    title: 'Potenciales',
+    value: votantes.filter(v => v.estado === 'potencial').length.toString(),
+    icon: Search,
+    change: '+10%',
+    positive: true,
+    color: 'bg-gray-500'
+  },
+  {
+    title: 'Simpatizantes',
+    value: votantes.filter(v => v.estado === 'simpatizante').length.toString(),
+    icon: Star,
+    change: '+8%',
+    positive: true,
+    color: 'bg-green-500'
+  },
+  {
+    title: 'Voluntarios',
+    value: votantes.filter(v => v.estado === 'voluntario').length.toString(),
+    icon: Target,
+    change: '+12%',
+    positive: true,
+    color: 'bg-purple-500'
+  },
+  {
+    title: 'Indecisos',
+    value: votantes.filter(v => v.estado === 'indeciso').length.toString(),
+    icon: HelpCircle,
+    change: '+5%',
+    positive: false,
+    color: 'bg-yellow-500'
+  },
+  {
+    title: 'Mensajes Enviados',
+    value: campanas.reduce((total, c) => total + c.mensajesEnviados, 0).toString(),
+    icon: Send,
+    change: '+23%',
+    positive: true,
+    color: 'bg-orange-500'
+  }
+]
 
   const votantesRecientes = votantes.slice(0, 4)
   const barriosActivos = Array.from(new Set(votantes.map(v => v.barrio).filter(Boolean))).slice(0, 5)
