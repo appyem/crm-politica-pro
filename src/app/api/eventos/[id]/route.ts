@@ -10,6 +10,9 @@ export async function PUT(
     const body = await request.json()
     const { id } = params
 
+    // Convertir asistentes a JSON string
+    const asistentesString = body.asistentes ? JSON.stringify(body.asistentes) : null
+
     const evento = await db.evento.update({
       where: { id },
       data: {
@@ -20,11 +23,17 @@ export async function PUT(
         ubicacion: body.ubicacion,
         tipo: body.tipo,
         estado: body.estado,
-        asistentes: body.asistentes
+        asistentes: asistentesString
       }
     })
 
-    return NextResponse.json(evento)
+    // Convertir de vuelta a objeto para la respuesta
+    const eventoResponse = {
+      ...evento,
+      asistentes: evento.asistentes ? JSON.parse(evento.asistentes) : []
+    }
+
+    return NextResponse.json(eventoResponse)
   } catch (error) {
     console.error('Error al actualizar evento:', error)
     return NextResponse.json({ error: 'Error al actualizar evento' }, { status: 500 })

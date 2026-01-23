@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 })
     }
 
+    // Convertir asistentes a JSON string
+    const asistentesString = body.asistentes ? JSON.stringify(body.asistentes) : null
+
     const evento = await db.evento.create({
       data: {
         titulo: body.titulo,
@@ -31,11 +34,17 @@ export async function POST(request: NextRequest) {
         ubicacion: body.ubicacion,
         tipo: body.tipo || 'reunion',
         estado: body.estado || 'programado',
-        asistentes: body.asistentes || []
+        asistentes: asistentesString
       }
     })
 
-    return NextResponse.json(evento, { status: 201 })
+    // Convertir de vuelta a objeto para la respuesta
+    const eventoResponse = {
+      ...evento,
+      asistentes: evento.asistentes ? JSON.parse(evento.asistentes) : []
+    }
+
+    return NextResponse.json(eventoResponse, { status: 201 })
   } catch (error) {
     console.error('Error al crear evento:', error)
     return NextResponse.json({ error: 'Error al crear evento' }, { status: 500 })
