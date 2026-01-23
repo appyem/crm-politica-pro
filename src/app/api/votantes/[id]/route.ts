@@ -9,8 +9,7 @@ export async function GET(
     const votante = await db.votante.findUnique({
       where: { id: params.id },
       include: {
-        mensajes: true,
-       
+        mensajes: true
       }
     })
 
@@ -37,57 +36,68 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const { 
-      nombre, 
-      email, 
-      telefono, 
-      whatsapp, 
-      instagram,
-      edad,
-      genero,
-      estado,
-      colonia,
-      municipio,
-      seccion,
-      distrito,
-      ocupacion,
-      nivelEstudio,
-      intereses,
-      notas
-    } = body
-
-    // Validaciones básicas
-    if (!nombre) {
+    
+    // Validación básica
+    if (!body.nombre || !body.cedula) {
       return NextResponse.json(
-        { error: 'El nombre es requerido' },
+        { error: 'Nombre y cédula son requeridos' },
         { status: 400 }
+      )
+    }
+
+    // Verificar si la cédula ya existe en otro votante
+    const cedulaExistente = await db.votante.findFirst({
+      where: { 
+        cedula: body.cedula,
+        NOT: { id: params.id }
+      }
+    })
+
+    if (cedulaExistente) {
+      return NextResponse.json(
+        { error: 'Cédula ya registrada' },
+        { status: 409 }
       )
     }
 
     const votanteActualizado = await db.votante.update({
       where: { id: params.id },
       data: {
-        nombre,
-        email: email || null,
-        telefono: telefono || null,
-        whatsapp: whatsapp || null,
-        instagram: instagram || null,
-        edad: edad || null,
-        genero: genero || null,
-        estado: estado || 'potencial',
-        barrio: colonia || null,
-        municipio: municipio || null,
-        
-        ocupacion: ocupacion || null,
-        nivelEstudio: nivelEstudio || null,
-        intereses: intereses || null,
-        notas: notas || null
+        nombre: body.nombre,
+        cedula: body.cedula,
+        email: body.email || null,
+        telefono: body.telefono || null,
+        whatsapp: body.whatsapp || null,
+        instagram: body.instagram || null,
+        edad: body.edad ? parseInt(body.edad) : null,
+        genero: body.genero || null,
+        estado: body.estado || 'potencial',
+        departamento: body.departamento || null,
+        municipio: body.municipio || null,
+        barrio: body.barrio || null,
+        lugarCiudad: body.lugarCiudad || null,
+        lugarPuesto: body.lugarPuesto || null,
+        lugarMesa: body.lugarMesa || null,
+        lugarDireccion: body.lugarDireccion || null,
+        lugarDepartamento: body.lugarDepartamento || null,
+        ocupacion: body.ocupacion || null,
+        nivelEstudio: body.nivelEstudio || null,
+        intereses: body.intereses || null,
+        notas: body.notas || null
       }
     })
 
     return NextResponse.json(votanteActualizado)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating votante:', error)
+    
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Cédula ya registrada' },
+        { status: 409 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Error al actualizar votante' },
       { status: 500 }
