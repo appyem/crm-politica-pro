@@ -846,6 +846,37 @@ const stats = [
                 </Card>
               )}
 
+
+
+              {/* Top 5 Líderes Detalle */}
+              {lideresArray.length > 0 && (
+                <Card className="mt-4 border-purple-200">
+                  <CardHeader>
+                    <CardTitle className="text-purple-900">🏆 Top 5 Líderes con Más Confirmaciones</CardTitle>
+                    <CardDescription className="text-purple-700">
+                      Líderes que han traído más simpatizantes a reuniones
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {lideresArray.map((lider, index) => (
+                        <div key={lider.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">
+                              {index + 1}
+                            </div>
+                            <span className="font-medium text-gray-900">{lider.nombre}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-purple-700">{lider.count} inscritos</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
             </div>
           )}
 
