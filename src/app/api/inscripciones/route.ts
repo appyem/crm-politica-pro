@@ -25,51 +25,62 @@ export async function POST(request: NextRequest) {
     const evento = await db.evento.findUnique({
       where: { id: body.eventoId }
     })
-
     if (!evento) {
-      return NextResponse.json(
-        { error: 'Evento no encontrado' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 })
     }
 
     // Verificar que el líder exista y sea "potencial"
     const lider = await db.votante.findUnique({
       where: { id: body.liderId }
     })
-
     if (!lider || lider.estado !== 'potencial') {
-      return NextResponse.json(
-        { error: 'Líder no válido' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Líder no válido' }, { status: 404 })
     }
 
-    // Verificar si la cédula ya está registrada en Votante
-    const votanteExistente = await db.votante.findUnique({
-      where: { cedula: body.cedula }
-    })
-
-    if (votanteExistente) {
-      return NextResponse.json(
-        { error: 'Usuario ya registrado' },
-        { status: 409 }
-      )
-    }
-
-    // Verificar si la cédula ya está inscrita para este evento
+    // Verificar si ya hay una inscripción con esta cédula para este evento
     const inscripcionExistente = await db.inscripcion.findFirst({
       where: { 
         cedula: body.cedula,
         eventoId: body.eventoId
       }
     })
-
     if (inscripcionExistente) {
       return NextResponse.json(
         { error: 'Ya estás inscrito en esta reunión' },
         { status: 409 }
       )
+    }
+
+    // ✅ Crear votante básico si no existe
+    let votante = await db.votante.findUnique({
+      where: { cedula: body.cedula }
+    })
+
+    if (!votante) {
+      votante = await db.votante.create({
+        data: {
+          cedula: body.cedula,
+          nombre: body.nombre,
+          whatsapp: body.telefono,
+          telefono: body.telefono,
+          estado: 'simpatizante', // ← Importante: estado inicial
+          genero: null,
+          edad: null,
+          departamento: null,
+          municipio: null,
+          barrio: null,
+          lugarCiudad: null,
+          lugarPuesto: null,
+          lugarMesa: null,
+          lugarDireccion: null,
+          lugarDepartamento: null,
+          ocupacion: null,
+          nivelEstudio: null,
+          intereses: null,
+          notas: 'Registrado vía inscripción a reunión',
+          email: null
+        }
+      })
     }
 
     // Crear la inscripción
