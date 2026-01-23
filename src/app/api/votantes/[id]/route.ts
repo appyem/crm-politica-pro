@@ -10,7 +10,7 @@ export async function GET(
       where: { id: params.id },
       include: {
         mensajes: true,
-        eventos: true
+       
       }
     })
 
@@ -75,10 +75,9 @@ export async function PUT(
         edad: edad || null,
         genero: genero || null,
         estado: estado || 'potencial',
-        colonia: colonia || null,
+        barrio: colonia || null,
         municipio: municipio || null,
-        seccion: seccion || null,
-        distrito: distrito || null,
+        
         ocupacion: ocupacion || null,
         nivelEstudio: nivelEstudio || null,
         intereses: intereses || null,

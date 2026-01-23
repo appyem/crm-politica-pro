@@ -74,18 +74,30 @@ interface Campana {
   createdAt: string
 }
 
+interface Inscripcion {
+id: string
+nombre: string
+cedula: string
+telefono: string
+createdAt: string
+liderId: string
+}
+
 interface Evento {
-  id: string
-  titulo: string
-  descripcion: string
-  fecha: string
-  hora: string
-  ubicacion: string
-  tipo: 'reunion' | 'concentracion' | 'debate' | 'visita'
-  estado: 'programado' | 'en_curso' | 'finalizado' | 'cancelado'
-  asistentes: string[]
-  createdAt: string
-  liderId?: string
+id: string
+titulo: string
+descripcion: string
+fecha: string
+hora: string
+ubicacion: string
+tipo: 'reunion' | 'concentracion' | 'debate' | 'visita'
+estado: 'programado' | 'en_curso' | 'finalizado' | 'cancelado'
+asistentes: string[]
+createdAt: string
+liderId?: string
+lideres: { id: string; nombre: string }[]
+inscripciones: Inscripcion[]
+totalInscritos: number
 }
 
 interface Plantilla {
@@ -617,19 +629,70 @@ export default function PoliticalCRM() {
                     <CardDescription>Próximas actividades</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {eventosProximos.length > 0 ? (
                         eventosProximos.map((evento) => (
-                          <div key={evento.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                            <div>
-                              <p className="font-medium text-gray-900">{evento.titulo}</p>
-                              <p className="text-sm text-gray-600">
-                                {new Date(evento.fecha).toLocaleDateString()} - {evento.ubicacion}
-                              </p>
+                          <div key={evento.id} className="border border-purple-100 rounded-lg p-3 bg-white">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <p className="font-medium text-gray-900">{evento.titulo}</p>
+                                <p className="text-sm text-gray-600">
+                                  {new Date(evento.fecha).toLocaleDateString()} - {evento.ubicacion}
+                                </p>
+                                <p className="text-xs text-green-600 mt-1">
+                                  📋 Total inscritos: {evento.totalInscritos}
+                                </p>
+                              </div>
+                              <Badge className="bg-purple-100 text-purple-800">
+                                {evento.tipo}
+                              </Badge>
                             </div>
-                            <Badge className="bg-purple-100 text-purple-800">
-                              {evento.tipo}
-                            </Badge>
+
+                            {/* Selector de líderes */}
+                            {evento.lideres && evento.lideres.length > 0 && (
+                              <div className="mt-3">
+                                <Label className="text-xs text-gray-700">Líderes con invitaciones</Label>
+                                <Select
+                                  onValueChange={(selectedLiderId) => {
+                                    // Guardar selección en localStorage o estado si lo prefieres
+                                    const container = document.getElementById(`inscritos-${evento.id}`);
+                                    if (container) {
+                                      container.innerHTML = '';
+                                      const inscritosFiltrados = evento.inscripciones.filter(i => i.liderId === selectedLiderId);
+                                      if (inscritosFiltrados.length > 0) {
+                                        inscritosFiltrados.forEach(insc => {
+                                          const div = document.createElement('div');
+                                          div.className = 'flex justify-between text-xs py-1 border-b border-gray-100';
+                                          div.innerHTML = `
+                                            <span>${insc.nombre}</span>
+                                            <span class="text-gray-500">${insc.cedula}</span>
+                                          `;
+                                          container.appendChild(div);
+                                        });
+                                      } else {
+                                        container.innerHTML = '<p class="text-xs text-gray-500 py-2">No hay inscritos</p>';
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="w-full text-xs">
+                                    <SelectValue placeholder="Seleccione un líder" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {evento.lideres.map(lider => (
+                                      <SelectItem key={lider.id} value={lider.id} className="text-xs">
+                                        {lider.nombre}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+
+                                {/* Contenedor de inscritos */}
+                                <div id={`inscritos-${evento.id}`} className="mt-2 max-h-40 overflow-y-auto">
+                                  <p className="text-xs text-gray-500 py-2">Seleccione un líder para ver sus invitados</p>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))
                       ) : (
