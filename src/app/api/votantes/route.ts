@@ -1,35 +1,5 @@
-// src/app/api/votantes/route.ts
-
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-
-// Tipado del cuerpo esperado (coincide con tu frontend)
-interface CreateVotanteBody {
-  cedula: string
-  nombre: string
-  email?: string
-  telefono?: string
-  whatsapp?: string
-  instagram?: string
-  edad?: string // viene como string desde el form
-  genero?: string
-  estado?: string
-  departamento?: string
-  municipio?: string
-  barrio?: string
-  sitioVotacion?: string
-  lugarVotacion?: {
-    ciudad?: string
-    puesto?: string
-    mesa?: string
-    direccion?: string
-    departamento?: string
-  }
-  ocupacion?: string
-  nivelEstudio?: string
-  intereses?: string
-  notas?: string
-}
 
 export async function GET() {
   try {
@@ -45,9 +15,17 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as CreateVotanteBody
+    const body = await request.json()
 
-    // ✅ Ahora esto funcionará después de `prisma generate`
+    // Validación básica
+    if (!body.cedula || !body.nombre) {
+      return NextResponse.json(
+        { error: 'Cédula y nombre son requeridos' },
+        { status: 400 }
+      )
+    }
+
+    // Verificar cédula duplicada
     const existingVotante = await db.votante.findUnique({
       where: { cedula: body.cedula }
     })
@@ -59,6 +37,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Crear votante con campos planos
     const votante = await db.votante.create({
       data: {
         cedula: body.cedula,
@@ -73,12 +52,11 @@ export async function POST(request: NextRequest) {
         departamento: body.departamento || null,
         municipio: body.municipio || null,
         barrio: body.barrio || null,
-        sitioVotacion: body.sitioVotacion || null,
-        lugarCiudad: body.lugarVotacion?.ciudad || null,
-        lugarPuesto: body.lugarVotacion?.puesto || null,
-        lugarMesa: body.lugarVotacion?.mesa || null,
-        lugarDireccion: body.lugarVotacion?.direccion || null,
-        lugarDepartamento: body.lugarVotacion?.departamento || null,
+        lugarCiudad: body.lugarCiudad || null,
+        lugarPuesto: body.lugarPuesto || null,
+        lugarMesa: body.lugarMesa || null,
+        lugarDireccion: body.lugarDireccion || null,
+        lugarDepartamento: body.lugarDepartamento || null,
         ocupacion: body.ocupacion || null,
         nivelEstudio: body.nivelEstudio || null,
         intereses: body.intereses || null,
@@ -87,11 +65,19 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(votante, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error al crear votante:', error)
-    return NextResponse.json({ error: 'Error al crear votante' }, { status: 500 })
+    
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Cédula ya registrada' },
+        { status: 409 }
+      )
+    }
+    
+    return NextResponse.json(
+      { error: 'Error interno al crear votante' },
+      { status: 500 }
+    )
   }
 }
-
-// PUT y DELETE pueden quedar igual (ya están bien)
-// ... (resto del archivo sin cambios)
