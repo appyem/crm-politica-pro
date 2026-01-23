@@ -617,6 +617,22 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
   const [editingVotante, setEditingVotante] = useState<Votante | undefined>()
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('lista')
+  const [filtroCedula, setFiltroCedula] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState('todos')
+
+
+     // Filtrar votantes según cédula y estado
+  const votantesFiltrados = votantes.filter(votante => {
+    const coincideCedula = !filtroCedula || 
+      votante.cedula.toLowerCase().includes(filtroCedula.toLowerCase())
+    
+    const coincideEstado = filtroEstado === 'todos' || 
+      votante.estado === filtroEstado
+    
+    return coincideCedula && coincideEstado
+  })
+
+
 
   const handleSave = async (votanteData: Partial<Votante>) => {
     setLoading(true)
@@ -693,20 +709,51 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Gestión de Votantes</h2>
-          <p className="text-gray-600">Base de datos de electores con validación de cédula</p>
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">Gestión de Votantes</h2>
+            <p className="text-gray-600">Base de datos de electores</p>
+          </div>
+          <div className="flex space-x-3">
+            <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
+              <Upload className="h-4 w-4 mr-2" />
+              Importar Excel
+            </Button>
+            <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleNew}>
+              <Users className="h-4 w-4 mr-2" />
+              Agregar Votante
+            </Button>
+          </div>
         </div>
-        <div className="flex space-x-3">
-          <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
-            <Upload className="h-4 w-4 mr-2" />
-            Importar Excel
-          </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleNew}>
-            <Users className="h-4 w-4 mr-2" />
-            Agregar Votante
-          </Button>
+
+        {/* Controles de filtro */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <Label htmlFor="filtroCedula" className="text-sm text-gray-600">Buscar por cédula</Label>
+            <Input
+              id="filtroCedula"
+              placeholder="Ingrese cédula..."
+              value={filtroCedula}
+              onChange={(e) => setFiltroCedula(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div className="w-full sm:w-48">
+            <Label htmlFor="filtroEstado" className="text-sm text-gray-600">Filtrar por estado</Label>
+            <Select value={filtroEstado} onValueChange={setFiltroEstado}>
+              <SelectTrigger id="filtroEstado" className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="potencial">Potencial</SelectItem>
+                <SelectItem value="simpatizante">Simpatizante</SelectItem>
+                <SelectItem value="voluntario">Voluntario</SelectItem>
+                <SelectItem value="indeciso">Indeciso</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -748,7 +795,7 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {votantes.map((votante) => (
+                    {votantesFiltrados.map((votante) => (
                       <tr key={votante.id} className="hover:bg-blue-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{votante.cedula}</div>
