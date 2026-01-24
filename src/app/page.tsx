@@ -514,7 +514,7 @@ const stats = [
     const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`
     
     // Mensaje personalizado
-    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nComparte este enlace con tus contactos:\n${enlace}`
+    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nDesde el siguiente enlace podrás inscribir a tus invitados:\n${enlace}`
     
     // Codificar para URL
     const mensajeCodificado = encodeURIComponent(mensaje)
@@ -540,7 +540,7 @@ const stats = [
         if (!lider) return null
         
         const enlace = `${window.location.origin}/inscripcion?evento=${selectedEvento.id}&lider=${liderId}`
-        const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${selectedEvento.titulo}".\n\nComparte este enlace con tus contactos:\n${enlace}`
+        const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${selectedEvento.titulo}".\n\nDesde el siguiente enlace podrás inscribir a tus invitados:\n${enlace}`
         
         return {
           votanteId: liderId,
@@ -601,7 +601,7 @@ const stats = [
     const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`;
     
     // Mensaje personalizado
-    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nComparte este enlace con tus contactos:\n${enlace}`;
+    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nDesde el siguiente enlace podrás inscribir a tus invitados:\n${enlace}`;
     
     // Codificar para URL
     const mensajeCodificado = encodeURIComponent(mensaje);
