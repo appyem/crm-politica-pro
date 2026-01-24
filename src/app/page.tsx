@@ -487,6 +487,37 @@ const stats = [
       return
     }
 
+
+  // Función para enviar mensaje por WhatsApp Web (cliente)
+  const handleEnviarPorWhatsAppWeb = (liderId: string) => {
+    const lider = votantes.find(v => v.id === liderId)
+    if (!lider || !lider.whatsapp) {
+      alert('Líder no tiene número de WhatsApp')
+      return
+    }
+
+    const evento = selectedEvento
+    if (!evento) {
+      alert('No hay evento seleccionado')
+      return
+    }
+
+    // Construir enlace de inscripción
+    const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`
+    
+    // Mensaje personalizado
+    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nComparte este enlace con tus contactos:\n${enlace}`
+    
+    // Codificar para URL
+    const mensajeCodificado = encodeURIComponent(mensaje)
+    const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp
+    
+    // Abrir WhatsApp Web
+    window.open(`https://wa.me/${numero}?text=${mensajeCodificado}`, '_blank')
+  }
+
+
+
     const confirmacion = confirm(`¿Estás seguro de enviar invitaciones a ${lideresSeleccionados.size} líderes?`)
     if (!confirmacion) return
 
@@ -541,6 +572,34 @@ const stats = [
     }
   }
 
+  const handleEnviarPorWhatsAppWeb = (liderId: string) => {
+    const lider = votantes.find(v => v.id === liderId);
+    if (!lider || !lider.whatsapp) {
+      alert('Líder no tiene número de WhatsApp');
+      return;
+    }
+
+    const evento = selectedEvento;
+    if (!evento) {
+      alert('No hay evento seleccionado');
+      return;
+    }
+
+    // Construir enlace de inscripción
+    const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`;
+    
+    // Mensaje personalizado
+    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nComparte este enlace con tus contactos:\n${enlace}`;
+    
+    // Codificar para URL
+    const mensajeCodificado = encodeURIComponent(mensaje);
+    const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp;
+    
+    // Abrir WhatsApp Web
+    window.open(`https://wa.me/${numero}?text=${mensajeCodificado}`, '_blank');
+  }
+  // Esta función ya está implementada arriba en el código
+  // Solo elimina esta declaración duplicada y usa la implementación existente
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-red-50">
       {/* Header Político Moderno */}
@@ -1540,66 +1599,63 @@ const stats = [
                     />
 
                     <div className="max-h-60 overflow-y-auto border rounded-lg">
-                      {lideresFiltrados.length > 0 ? (
-                        <div className="p-2 space-y-2">
-                          {lideresFiltrados.map(lider => (
-                            <div key={lider.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
-                              <input
-                                type="checkbox"
-                                checked={lideresSeleccionados.has(lider.id)}
-                                onChange={(e) => {
-                                  const newSet = new Set(lideresSeleccionados)
-                                  if (e.target.checked) {
-                                    newSet.add(lider.id)
-                                  } else {
-                                    newSet.delete(lider.id)
-                                  }
-                                  setLideresSeleccionados(newSet)
-                                }}
-                                className="rounded"
-                              />
+                    {lideresFiltrados.length > 0 ? (
+                      <div className="p-2 space-y-2">
+                        {lideresFiltrados.map(lider => (
+                          <div key={lider.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                            <div className="flex items-center space-x-3 flex-1">
                               <div className="flex-1">
                                 <p className="font-medium">{lider.nombre}</p>
                                 <p className="text-sm text-gray-600">{lider.cedula}</p>
+                                <p className="text-xs text-gray-500">
+                                  {lider.whatsapp || 'Sin WhatsApp'}
+                                </p>
                               </div>
                               <Badge variant="outline">Potencial</Badge>
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 text-center py-4">No hay líderes que coincidan</p>
-                      )}
-                    </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEnviarPorWhatsAppWeb(lider.id)}
+                              disabled={!lider.whatsapp}
+                              className="ml-2"
+                            >
+                              <MessageSquare className="h-3 w-3 mr-1" />
+                              Enviar
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">No hay líderes que coincidan</p>
+                    )}
+                  </div>
 
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          const ids = new Set(lideresFiltrados.map(l => l.id))
-                          setLideresSeleccionados(ids)
-                        }}
-                      >
-                        Seleccionar Todos ({lideresFiltrados.length})
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setLideresSeleccionados(new Set())}
-                      >
-                        Limpiar Selección
-                      </Button>
-                    </div>
-
+                  {/* Botón para enviar a todos (opcional) */}
+                  {selectedEvento && (
                     <Button
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      onClick={handleEnviarInvitaciones}
-                      disabled={lideresSeleccionados.size === 0}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => {
+                        if (lideresFiltrados.length === 0) {
+                          alert('No hay líderes para enviar')
+                          return
+                        }
+                        if (!confirm(`¿Abrir WhatsApp Web para ${lideresFiltrados.length} líderes? Esto abrirá ${lideresFiltrados.length} pestañas.`)) {
+                          return
+                        }
+                        lideresFiltrados.forEach(lider => {
+                          if (lider.whatsapp) {
+                            handleEnviarPorWhatsAppWeb(lider.id)
+                          }
+                        })
+                      }}
+                      disabled={lideresFiltrados.length === 0}
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      Enviar enlaces a {lideresSeleccionados.size} líderes
+                      Enviar a todos los {lideresFiltrados.length} líderes
                     </Button>
-                  </div>
+                  )}
+                                    </div>
                 )}
               </CardContent>
             </Card>
@@ -1607,7 +1663,7 @@ const stats = [
         )}
 
 
-        
+
 
 
         </main>
