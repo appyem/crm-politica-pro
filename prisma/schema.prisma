@@ -54,6 +54,7 @@ model Votante {
   nivelEstudio    String?
   intereses       String?
   notas           String?
+  ultimoMensajeEnviadoAt DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

@@ -488,7 +488,7 @@ const stats = [
     }
 
 
-  // Función para enviar mensaje por WhatsApp Web (cliente)
+  // Función para enviar mensaje por WhatsApp Web (con tracking local)
   const handleEnviarPorWhatsAppWeb = (liderId: string) => {
     const lider = votantes.find(v => v.id === liderId)
     if (!lider || !lider.whatsapp) {
@@ -502,6 +502,14 @@ const stats = [
       return
     }
 
+    // Verificar si ya se envió recientemente
+    const mensajesEnviados = JSON.parse(localStorage.getItem('mensajesEnviados') || '[]')
+    if (mensajesEnviados.includes(liderId)) {
+      if (!confirm(`Ya se envió un mensaje a ${lider.nombre}. ¿Enviar nuevamente?`)) {
+        return
+      }
+    }
+
     // Construir enlace de inscripción
     const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`
     
@@ -512,8 +520,12 @@ const stats = [
     const mensajeCodificado = encodeURIComponent(mensaje)
     const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp
     
-    // Abrir WhatsApp Web
-    window.open(`https://wa.me/${numero}?text=${mensajeCodificado}`, '_blank')
+    // Abrir directamente WhatsApp Web
+    window.open(`https://web.whatsapp.com/send?phone=${numero.replace('+', '')}&text=${mensajeCodificado}`, '_blank')
+    
+    // Registrar que se envió
+    mensajesEnviados.push(liderId)
+    localStorage.setItem('mensajesEnviados', JSON.stringify(mensajesEnviados))
   }
 
 
@@ -595,8 +607,8 @@ const stats = [
     const mensajeCodificado = encodeURIComponent(mensaje);
     const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp;
     
-    // Abrir WhatsApp Web
-    window.open(`https://wa.me/${numero}?text=${mensajeCodificado}`, '_blank');
+    // Abrir directamente WhatsApp Web
+    window.open(`https://web.whatsapp.com/send?phone=${numero.replace('+', '')}&text=${mensajeCodificado}`, '_blank')
   }
   // Esta función ya está implementada arriba en el código
   // Solo elimina esta declaración duplicada y usa la implementación existente
