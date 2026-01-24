@@ -133,6 +133,23 @@ export default function PoliticalCRM() {
   const [mensajeMensajeria, setMensajeMensajeria] = useState('')
 
 
+  // Estados para campaña de invitación
+  const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null)
+  const [filtroEstadoLideres, setFiltroEstadoLideres] = useState('todos')
+  const [busquedaLideres, setBusquedaLideres] = useState('')
+  const [lideresSeleccionados, setLideresSeleccionados] = useState<Set<string>>(new Set())
+
+  // Líderes filtrados para campaña de invitación
+  const lideresFiltrados = votantes.filter(votante => {
+    const esPotencial = votante.estado === 'potencial'
+    const coincideEstado = filtroEstadoLideres === 'todos' || votante.estado === filtroEstadoLideres
+    const coincideBusqueda = !busquedaLideres ||
+      votante.nombre.toLowerCase().includes(busquedaLideres.toLowerCase()) ||
+      votante.cedula.includes(busquedaLideres)
+    return esPotencial && coincideEstado && coincideBusqueda
+  })
+
+
   // Votantes filtrados para mensajería
   const votantesFiltradosMensajeria = votantes.filter(votante => {
     const coincideEstado = filtroEstadoMensajeria === 'todos' || votante.estado === filtroEstadoMensajeria
@@ -462,6 +479,68 @@ const stats = [
     }
   }
 
+
+  // Función para enviar invitaciones a líderes
+  const handleEnviarInvitaciones = async () => {
+    if (!selectedEvento || lideresSeleccionados.size === 0) {
+      alert('Seleccione un evento y al menos un líder')
+      return
+    }
+
+    const confirmacion = confirm(`¿Estás seguro de enviar invitaciones a ${lideresSeleccionados.size} líderes?`)
+    if (!confirmacion) return
+
+    try {
+      // Preparar mensaje personalizado para cada líder
+      const mensajes = Array.from(lideresSeleccionados).map(liderId => {
+        const lider = votantes.find(v => v.id === liderId)
+        if (!lider) return null
+        
+        const enlace = `${window.location.origin}/inscripcion?evento=${selectedEvento.id}&lider=${liderId}`
+        const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${selectedEvento.titulo}".\n\nComparte este enlace con tus contactos:\n${enlace}`
+        
+        return {
+          votanteId: liderId,
+          plataforma: 'whatsapp',
+          mensaje
+        }
+      }).filter(Boolean)
+
+      if (mensajes.length === 0) {
+        alert('No se pudieron generar los mensajes')
+        return
+      }
+
+      // Enviar a la API de mensajes
+      const response = await fetch('/api/mensajes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plataforma: 'whatsapp',
+          tipo: 'invitacion',
+          votantesSeleccionados: Array.from(lideresSeleccionados),
+          variables: {
+            evento: selectedEvento.titulo
+          }
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(`✅ ${result.message}`)
+        // Limpiar selección
+        setLideresSeleccionados(new Set())
+        setSelectedEvento(null)
+      } else {
+        const error = await response.json()
+        alert(`❌ Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error al enviar invitaciones:', error)
+      alert('Error al enviar invitaciones')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-red-50">
       {/* Header Político Moderno */}
@@ -573,6 +652,20 @@ const stats = [
                 <Mail className="h-4 w-4 mr-3" />
                 Plantillas
               </Button>
+
+              <Button
+              variant={activeTab === 'invitaciones' ? 'default' : 'ghost'}
+              className={`w-full justify-start ${
+              activeTab === 'invitaciones'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'hover:bg-blue-50 text-gray-700'
+              }`}
+              onClick={() => setActiveTab('invitaciones')}
+              >
+              <MessageSquare className="h-4 w-4 mr-3" />
+              Invitaciones a Eventos
+              </Button>
+
             </nav>
           </div>
 
@@ -1381,6 +1474,142 @@ const stats = [
               )}
             </div>
           )}
+
+
+          {activeTab === 'invitaciones' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Campañas de Invitación</h2>
+              <p className="text-gray-600">Envía enlaces personalizados a líderes para que inviten a sus contactos</p>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Crear Campaña de Invitación</CardTitle>
+                <CardDescription>Selecciona un evento y los líderes a los que deseas enviar el enlace</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Selector de evento */}
+                <div>
+                  <Label>Evento Activo</Label>
+                  <Select
+                    onValueChange={(value) => {
+                      const evento = eventos.find(e => e.id === value)
+                      setSelectedEvento(evento || null)
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione un evento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eventos
+                        .filter(e => e.estado === 'programado')
+                        .map(evento => (
+                          <SelectItem key={evento.id} value={evento.id}>
+                            {evento.titulo} - {new Date(evento.fecha).toLocaleDateString()}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Filtros y lista de líderes */}
+                {selectedEvento && (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoLideres === 'todos' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoLideres('todos')}
+                      >
+                        Todos
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoLideres === 'potencial' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoLideres('potencial')}
+                      >
+                        Potenciales
+                      </Button>
+                    </div>
+
+                    <Input
+                      placeholder="Buscar líder por nombre o cédula..."
+                      value={busquedaLideres}
+                      onChange={(e) => setBusquedaLideres(e.target.value)}
+                    />
+
+                    <div className="max-h-60 overflow-y-auto border rounded-lg">
+                      {lideresFiltrados.length > 0 ? (
+                        <div className="p-2 space-y-2">
+                          {lideresFiltrados.map(lider => (
+                            <div key={lider.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                              <input
+                                type="checkbox"
+                                checked={lideresSeleccionados.has(lider.id)}
+                                onChange={(e) => {
+                                  const newSet = new Set(lideresSeleccionados)
+                                  if (e.target.checked) {
+                                    newSet.add(lider.id)
+                                  } else {
+                                    newSet.delete(lider.id)
+                                  }
+                                  setLideresSeleccionados(newSet)
+                                }}
+                                className="rounded"
+                              />
+                              <div className="flex-1">
+                                <p className="font-medium">{lider.nombre}</p>
+                                <p className="text-sm text-gray-600">{lider.cedula}</p>
+                              </div>
+                              <Badge variant="outline">Potencial</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-center py-4">No hay líderes que coincidan</p>
+                      )}
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const ids = new Set(lideresFiltrados.map(l => l.id))
+                          setLideresSeleccionados(ids)
+                        }}
+                      >
+                        Seleccionar Todos ({lideresFiltrados.length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLideresSeleccionados(new Set())}
+                      >
+                        Limpiar Selección
+                      </Button>
+                    </div>
+
+                    <Button
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={handleEnviarInvitaciones}
+                      disabled={lideresSeleccionados.size === 0}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Enviar enlaces a {lideresSeleccionados.size} líderes
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+
+        
+
+
         </main>
       </div>
 
