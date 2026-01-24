@@ -1,6 +1,7 @@
 // src/app/api/mensajes/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import twilio from 'twilio'
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,22 +53,32 @@ export async function POST(request: NextRequest) {
       
       // Reemplazar variables comunes
       mensajePersonalizado = mensajePersonalizado.replace(/\{nombre\}/g, votante.nombre)
+      mensajePersonalizado = mensajePersonalizado.replace(/\{cedula\}/g, votante.cedula || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{email\}/g, votante.email || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{telefono\}/g, votante.telefono || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{whatsapp\}/g, votante.whatsapp || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{edad\}/g, votante.edad?.toString() || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{genero\}/g, votante.genero || '')
-      mensajePersonalizado = mensajePersonalizado.replace(/\{colonia\}/g, votante.colonia || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{municipio\}/g, votante.municipio || '')
-      mensajePersonalizado = mensajePersonalizado.replace(/\{seccion\}/g, votante.seccion || '')
-      mensajePersonalizado = mensajePersonalizado.replace(/\{distrito\}/g, votante.distrito || '')
+      mensajePersonalizado = mensajePersonalizado.replace(/\{barrio\}/g, votante.barrio || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{ocupacion\}/g, votante.ocupacion || '')
       mensajePersonalizado = mensajePersonalizado.replace(/\{nivelEstudio\}/g, votante.nivelEstudio || '')
       
-      // Reemplazar variables personalizadas
+      // Manejar variables personalizadas (incluyendo {enlace})
       Object.keys(variables).forEach(key => {
-        const regex = new RegExp(`\\{${key}\\}`, 'g')
-        mensajePersonalizado = mensajePersonalizado.replace(regex, variables[key])
+        if (key === 'eventoId' && variables.eventoId) {
+          // Generar enlace personalizado
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+          const enlace = `${appUrl}/inscripcion?evento=${variables.eventoId}&lider=${votante.id}`
+          mensajePersonalizado = mensajePersonalizado.replace(/\{enlace\}/g, enlace)
+        } else if (key === 'evento') {
+          // Reemplazar {evento} con el nombre del evento
+          mensajePersonalizado = mensajePersonalizado.replace(/\{evento\}/g, variables.evento)
+        } else {
+          // Reemplazar otras variables
+          const regex = new RegExp(`\\{${key}\\}`, 'g')
+          mensajePersonalizado = mensajePersonalizado.replace(regex, variables[key] || '')
+        }
       })
       
       return mensajePersonalizado
@@ -119,13 +130,24 @@ export async function POST(request: NextRequest) {
           }
         })
 
-        // Aquí iría la integración real con las APIs
-        // Por ahora, solo guardamos en la base de datos
-        console.log(`Mensaje ${plataforma} guardado para ${votante.nombre}:`, {
-          contacto,
-          mensaje: mensajePersonalizado,
-          asunto
-        })
+        // Enviar mensaje real por WhatsApp usando Twilio
+        if (plataforma === 'whatsapp' && contacto) {
+          const client = twilio(
+            process.env.TWILIO_ACCOUNT_SID,
+            process.env.TWILIO_AUTH_TOKEN
+          );
+
+          try {
+            await client.messages.create({
+              from: process.env.TWILIO_WHATSAPP_NUMBER,
+              to: `whatsapp:${contacto.startsWith('+') ? contacto : '+' + contacto}`,
+              body: mensajePersonalizado
+            });
+          } catch (error) {
+            console.error('Error sending WhatsApp message:', error);
+            // Continuar aunque falle el envío real
+          }
+        }
 
         resultados.push({
           votanteId: votante.id,
