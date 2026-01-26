@@ -6,10 +6,11 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String   // Campo para contraseña hasheada
+  role      String   @default("admin") // "admin" | "user"
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -186,16 +186,18 @@ function VotanteForm({ votante, onSave, onCancel }: {
         <div>
           <Label htmlFor="estado">Estado</Label>
           <Select value={formData.estado} onValueChange={(value) => setFormData({ ...formData, estado: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="potencial">Potencial</SelectItem>
-              <SelectItem value="simpatizante">Simpatizante</SelectItem>
-              <SelectItem value="voluntario">Voluntario</SelectItem>
-              <SelectItem value="indeciso">Indeciso</SelectItem>
-            </SelectContent>
-          </Select>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="potencial">Potencial</SelectItem>
+            <SelectItem value="simpatizante">Simpatizante</SelectItem>
+            <SelectItem value="voluntario">Voluntario</SelectItem>
+            <SelectItem value="indeciso">Indeciso</SelectItem>
+            <SelectItem value="lider">Líder</SelectItem>
+            <SelectItem value="coordinador">Coordinador</SelectItem>
+          </SelectContent>
+        </Select>
         </div>
       </div>
 
@@ -208,14 +210,63 @@ function VotanteForm({ votante, onSave, onCancel }: {
             onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
           />
         </div>
-        <div>
-          <Label htmlFor="municipio">Municipio</Label>
-          <Input
-            id="municipio"
-            value={formData.municipio}
-            onChange={(e) => setFormData({ ...formData, municipio: e.target.value })}
-          />
-        </div>
+        {['lider', 'coordinador'].includes(formData.estado) ? (
+  <div>
+    <Label htmlFor="municipio">Municipio *</Label>
+    <Select 
+      value={formData.municipio || ''}
+      onValueChange={(value) => setFormData({ ...formData, municipio: value })}
+    >
+      <SelectTrigger id="municipio">
+        <SelectValue placeholder="Seleccione un municipio" />
+      </SelectTrigger>
+      <SelectContent>
+        {[
+          'Aguadas',
+          'Anserma',
+          'Aranzazu',
+          'Belalcázar',
+          'Chinchiná',
+          'Filadelfia',
+          'La Dorada',
+          'La Merced',
+          'Manizales',
+          'Manzanares',
+          'Marmato',
+          'Marquetalia',
+          'Marulanda',
+          'Neira',
+          'Norcasia',
+          'Pácora',
+          'Palestina',
+          'Pensilvania',
+          'Riosucio',
+          'Risaralda',
+          'Salamina',
+          'Samaná',
+          'San José',
+          'Supía',
+          'Victoria',
+          'Villamaría',
+          'Viterbo'
+        ].map(municipio => (
+          <SelectItem key={municipio} value={municipio}>
+            {municipio}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+) : (
+  <div>
+    <Label htmlFor="municipio">Municipio</Label>
+    <Input
+      id="municipio"
+      value={formData.municipio}
+      onChange={(e) => setFormData({ ...formData, municipio: e.target.value })}
+    />
+  </div>
+)}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

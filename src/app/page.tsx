@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import ProtectedRoute from '@/components/ProtectedRoute'
 import { 
   Users, 
   MessageSquare, 
@@ -34,6 +35,37 @@ import {
   HelpCircle
 } from 'lucide-react'
 import VotantesManager from '@/components/VotantesManager'
+
+// Lista de municipios de Caldas en orden alfabético
+const MUNICIPIOS_CALDAS = [
+  'Aguadas',
+  'Anserma',
+  'Aranzazu',
+  'Belalcázar',
+  'Chinchiná',
+  'Filadelfia',
+  'La Dorada',
+  'La Merced',
+  'Manizales',
+  'Manzanares',
+  'Marmato',
+  'Marquetalia',
+  'Marulanda',
+  'Neira',
+  'Norcasia',
+  'Pácora',
+  'Palestina',
+  'Pensilvania',
+  'Riosucio',
+  'Risaralda',
+  'Salamina',
+  'Samaná',
+  'San José',
+  'Supía',
+  'Victoria',
+  'Villamaría',
+  'Viterbo'
+].sort(); // Asegura orden alfabético
 
 interface Votante {
   id: string
@@ -1253,12 +1285,24 @@ const stats = [
                                 <p className="font-medium">{votante.nombre}</p>
                                 <p className="text-sm text-gray-600">{votante.cedula}</p>
                               </div>
-                              <Badge variant={
-                                votante.estado === 'simpatizante' ? 'default' :
-                                votante.estado === 'voluntario' ? 'secondary' :
-                                'outline'
-                              }>
-                                {votante.estado}
+                              <Badge
+                                variant={
+                                  votante.estado === 'simpatizante' ? 'default' :
+                                  votante.estado === 'voluntario' ? 'secondary' :
+                                  votante.estado === 'lider' || votante.estado === 'coordinador' ? 'secondary' :
+                                  'outline'
+                                }
+                                className={
+                                  votante.estado === 'simpatizante' ? 'bg-green-100 text-green-800' :
+                                  votante.estado === 'voluntario' ? 'bg-purple-100 text-purple-800' :
+                                  votante.estado === 'lider' ? 'bg-blue-100 text-blue-800' :
+                                  votante.estado === 'coordinador' ? 'bg-indigo-100 text-indigo-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }
+                              >
+                                {votante.estado === 'lider' ? 'Líder' : 
+                                votante.estado === 'coordinador' ? 'Coordinador' : 
+                                votante.estado}
                               </Badge>
                             </div>
                           ))}
