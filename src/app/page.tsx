@@ -1302,43 +1302,58 @@ const stats = [
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Filtros */}
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        size="sm"
-                        variant={filtroEstadoMensajeria === 'todos' ? 'default' : 'outline'}
-                        onClick={() => setFiltroEstadoMensajeria('todos')}
-                      >
-                        Todos
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={filtroEstadoMensajeria === 'potencial' ? 'default' : 'outline'}
-                        onClick={() => setFiltroEstadoMensajeria('potencial')}
-                      >
-                        Potenciales
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={filtroEstadoMensajeria === 'simpatizante' ? 'default' : 'outline'}
-                        onClick={() => setFiltroEstadoMensajeria('simpatizante')}
-                      >
-                        Simpatizantes
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={filtroEstadoMensajeria === 'voluntario' ? 'default' : 'outline'}
-                        onClick={() => setFiltroEstadoMensajeria('voluntario')}
-                      >
-                        Voluntarios
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={filtroEstadoMensajeria === 'indeciso' ? 'default' : 'outline'}
-                        onClick={() => setFiltroEstadoMensajeria('indeciso')}
-                      >
-                        Indecisos
-                      </Button>
-                    </div>
+                    {/* Filtros */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant={filtroEstadoMensajeria === 'todos' ? 'default' : 'outline'}
+              onClick={() => setFiltroEstadoMensajeria('todos')}
+            >
+              Todos
+            </Button>
+            <Button
+              size="sm"
+              variant={filtroEstadoMensajeria === 'potencial' ? 'default' : 'outline'}
+              onClick={() => setFiltroEstadoMensajeria('potencial')}
+            >
+              Potenciales
+            </Button>
+            <Button
+              size="sm"
+              variant={filtroEstadoMensajeria === 'simpatizante' ? 'default' : 'outline'}
+              onClick={() => setFiltroEstadoMensajeria('simpatizante')}
+            >
+              Simpatizantes
+            </Button>
+            <Button
+              size="sm"
+              variant={filtroEstadoMensajeria === 'voluntario' ? 'default' : 'outline'}
+              onClick={() => setFiltroEstadoMensajeria('voluntario')}
+            >
+              Voluntarios
+            </Button>
+            <Button
+              size="sm"
+              variant={filtroEstadoMensajeria === 'indeciso' ? 'default' : 'outline'}
+              onClick={() => setFiltroEstadoMensajeria('indeciso')}
+            >
+              Indecisos
+            </Button>
+            <Button
+              size="sm"
+              variant={filtroEstadoMensajeria === 'lider' ? 'default' : 'outline'}
+              onClick={() => setFiltroEstadoMensajeria('lider')}
+            >
+              Líderes
+            </Button>
+            <Button
+              size="sm"
+              variant={filtroEstadoMensajeria === 'coordinador' ? 'default' : 'outline'}
+              onClick={() => setFiltroEstadoMensajeria('coordinador')}
+            >
+              Coordinadores
+            </Button>
+          </div>
 
                     {/* Búsqueda por cédula/nombre */}
                     <Input
@@ -1731,6 +1746,20 @@ const stats = [
                         onClick={() => setFiltroEstadoLideres('potencial')}
                       >
                         Potenciales
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoLideres === 'lider' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoLideres('lider')}
+                      >
+                        Líderes
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={filtroEstadoLideres === 'coordinador' ? 'default' : 'outline'}
+                        onClick={() => setFiltroEstadoLideres('coordinador')}
+                      >
+                        Coordinadores
                       </Button>
                     </div>
 
