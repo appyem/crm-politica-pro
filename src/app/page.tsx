@@ -252,6 +252,7 @@ export default function PoliticalCRM() {
   }
 
   // Calcular estadísticas políticas
+// Calcular estadísticas políticas
 const stats = [
   {
     title: 'Total Votantes',
@@ -284,6 +285,22 @@ const stats = [
     change: '+12%',
     positive: true,
     color: 'bg-purple-500'
+  },
+  {
+    title: 'Líderes',
+    value: votantes.filter(v => v.estado === 'lider').length.toString(),
+    icon: TrendingUp,
+    change: '+7%',
+    positive: true,
+    color: 'bg-blue-600'
+  },
+  {
+    title: 'Coordinadores',
+    value: votantes.filter(v => v.estado === 'coordinador').length.toString(),
+    icon: MapPin,
+    change: '+5%',
+    positive: true,
+    color: 'bg-indigo-600'
   },
   {
     title: 'Indecisos',
