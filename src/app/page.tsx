@@ -810,11 +810,80 @@ const stats = [
                 </span>
               </div>
               <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Líderes</span>
+                <span className="font-bold text-blue-600">
+                  {votantes.filter(v => v.estado === 'lider').length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Coordinadores</span>
+                <span className="font-bold text-indigo-600">
+                  {votantes.filter(v => v.estado === 'coordinador').length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Campañas Activas</span>
                 <span className="font-bold text-orange-600">{campanasActivas.length}</span>
               </div>
             </div>
           </div>
+
+
+
+          {/* Filtro por Municipio */}
+          <div className="p-4 border-t border-gray-100">
+            <h4 className="font-semibold text-gray-800 mb-3">Filtrar por Municipio</h4>
+            <Select onValueChange={(value) => {
+              // Aquí podrías implementar lógica de filtrado si lo deseas
+              console.log('Filtrar por municipio:', value)
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos los municipios" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos los municipios</SelectItem>
+                {[
+                  'Aguadas',
+                  'Anserma',
+                  'Aranzazu',
+                  'Belalcázar',
+                  'Chinchiná',
+                  'Filadelfia',
+                  'La Dorada',
+                  'La Merced',
+                  'Manizales',
+                  'Manzanares',
+                  'Marmato',
+                  'Marquetalia',
+                  'Marulanda',
+                  'Neira',
+                  'Norcasia',
+                  'Pácora',
+                  'Palestina',
+                  'Pensilvania',
+                  'Riosucio',
+                  'Risaralda',
+                  'Salamina',
+                  'Samaná',
+                  'San José',
+                  'Supía',
+                  'Victoria',
+                  'Villamaría',
+                  'Viterbo'
+                ].map(municipio => (
+                  <SelectItem key={municipio} value={municipio}>
+                    {municipio}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+
+
+
+
+
         </aside>
 
         {/* Main Content */}

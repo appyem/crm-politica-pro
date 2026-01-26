@@ -822,7 +822,7 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                  <thead className="bg-linear-to-r from-blue-600 to-blue-700 text-white">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                         Cédula

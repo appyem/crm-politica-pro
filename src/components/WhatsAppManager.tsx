@@ -325,7 +325,7 @@ export default function WhatsAppManager({ clientes }: WhatsAppManagerProps) {
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {conversacionesFiltradas.slice(0, 10).map((conv) => (
                 <div key={conv.id} className="flex items-start space-x-3 pb-3 border-b">
-                  <div className="flex-shrink-0 mt-1">
+                  <div className="shrink-0 mt-1">
                     {conv.tipo === 'enviado' ? (
                       <Send className="h-4 w-4 text-blue-500" />
                     ) : (
