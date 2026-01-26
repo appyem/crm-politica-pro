@@ -270,6 +270,7 @@ function VotanteForm({ votante, onSave, onCancel }: {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {!['lider', 'coordinador'].includes(formData.estado) && (
         <div>
           <Label htmlFor="barrio">Barrio</Label>
           <Input
@@ -278,6 +279,7 @@ function VotanteForm({ votante, onSave, onCancel }: {
             onChange={(e) => setFormData({ ...formData, barrio: e.target.value })}
           />
         </div>
+      )}
         
       </div>
 
