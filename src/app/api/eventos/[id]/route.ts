@@ -18,7 +18,9 @@ export async function PUT(
       data: {
         titulo: body.titulo,
         descripcion: body.descripcion,
-        fecha: body.fecha ? new Date(body.fecha) : undefined,
+        fecha: body.fecha 
+        ? new Date(new Date(body.fecha).setUTCHours(12, 0, 0, 0)) 
+        : undefined,
         hora: body.hora,
         ubicacion: body.ubicacion,
         tipo: body.tipo,
