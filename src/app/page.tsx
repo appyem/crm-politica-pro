@@ -569,8 +569,9 @@ const stats = [
     const mensajeCodificado = encodeURIComponent(mensaje)
     const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp
     
-    // Abrir directamente WhatsApp Web
-    window.open(`https://web.whatsapp.com/send?phone=${numero.replace('+', '')}&text=${mensajeCodificado}`, '_blank')
+    // Abrir WhatsApp nativo (funciona en móvil y PC)
+    const whatsappUrl = `https://wa.me/${numero.replace('+', '')}?text=${mensajeCodificado}`;
+    window.open(whatsappUrl, '_blank');
     
     // Registrar que se envió
     mensajesEnviados.push(liderId)
@@ -657,7 +658,9 @@ const stats = [
     const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp;
     
     // Abrir directamente WhatsApp Web
-    window.open(`https://web.whatsapp.com/send?phone=${numero.replace('+', '')}&text=${mensajeCodificado}`, '_blank')
+    // Abrir WhatsApp nativo (funciona en móvil y PC)
+    const whatsappUrl = `https://wa.me/${numero.replace('+', '')}?text=${mensajeCodificado}`;
+    window.open(whatsappUrl, '_blank');
   }
   // Esta función ya está implementada arriba en el código
   // Solo elimina esta declaración duplicada y usa la implementación existente
