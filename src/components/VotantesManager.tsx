@@ -672,18 +672,22 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
   const [activeTab, setActiveTab] = useState('lista')
   const [filtroCedula, setFiltroCedula] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('todos')
+  const [filtroMunicipio, setFiltroMunicipio] = useState('todos')
 
 
-     // Filtrar votantes según cédula y estado
-  const votantesFiltrados = votantes.filter(votante => {
-    const coincideCedula = !filtroCedula || 
-      votante.cedula.toLowerCase().includes(filtroCedula.toLowerCase())
-    
-    const coincideEstado = filtroEstado === 'todos' || 
-      votante.estado === filtroEstado
-    
-    return coincideCedula && coincideEstado
-  })
+     // Filtrar votantes según cédula, estado y municipio
+    const votantesFiltrados = votantes.filter(votante => {
+      const coincideCedula = !filtroCedula || 
+        votante.cedula.toLowerCase().includes(filtroCedula.toLowerCase())
+      
+      const coincideEstado = filtroEstado === 'todos' || 
+        votante.estado === filtroEstado
+      
+      const coincideMunicipio = filtroMunicipio === 'todos' || 
+        votante.municipio === filtroMunicipio
+      
+      return coincideCedula && coincideEstado && coincideMunicipio
+    })
 
 
 
@@ -792,6 +796,7 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
               className="mt-1"
             />
           </div>
+         <div className="flex flex-col sm:flex-row gap-3 w-full">
           <div className="w-full sm:w-48">
             <Label htmlFor="filtroEstado" className="text-sm text-gray-600">Filtrar por estado</Label>
             <Select value={filtroEstado} onValueChange={setFiltroEstado}>
@@ -804,9 +809,56 @@ export default function VotantesManager({ votantes, onVotanteChange }: VotantesM
                 <SelectItem value="simpatizante">Simpatizante</SelectItem>
                 <SelectItem value="voluntario">Voluntario</SelectItem>
                 <SelectItem value="indeciso">Indeciso</SelectItem>
+                <SelectItem value="lider">Líder</SelectItem>
+                <SelectItem value="coordinador">Coordinador</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          <div className="w-full sm:w-48">
+            <Label htmlFor="filtroMunicipio" className="text-sm text-gray-600">Filtrar por municipio</Label>
+            <Select value={filtroMunicipio} onValueChange={setFiltroMunicipio}>
+              <SelectTrigger id="filtroMunicipio" className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos los municipios</SelectItem>
+                {[
+                  'Aguadas',
+                  'Anserma',
+                  'Aranzazu',
+                  'Belalcázar',
+                  'Chinchiná',
+                  'Filadelfia',
+                  'La Dorada',
+                  'La Merced',
+                  'Manizales',
+                  'Manzanares',
+                  'Marmato',
+                  'Marquetalia',
+                  'Marulanda',
+                  'Neira',
+                  'Norcasia',
+                  'Pácora',
+                  'Palestina',
+                  'Pensilvania',
+                  'Riosucio',
+                  'Risaralda',
+                  'Salamina',
+                  'Samaná',
+                  'San José',
+                  'Supía',
+                  'Victoria',
+                  'Villamaría',
+                  'Viterbo'
+                ].map(municipio => (
+                  <SelectItem key={municipio} value={municipio}>
+                    {municipio}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         </div>
       </div>
 
