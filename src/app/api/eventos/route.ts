@@ -43,8 +43,8 @@ export async function GET() {
 
         return {
           ...evento,
-          lideres,
-          inscripciones,
+          lideres: lideres || [],
+          inscripciones: inscripciones || [],
           totalInscritos: inscripciones.length
         }
       })
