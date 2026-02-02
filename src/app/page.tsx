@@ -170,16 +170,25 @@ export default function PoliticalCRM() {
   const [filtroEstadoLideres, setFiltroEstadoLideres] = useState('todos')
   const [busquedaLideres, setBusquedaLideres] = useState('')
   const [lideresSeleccionados, setLideresSeleccionados] = useState<Set<string>>(new Set())
+  const [filtroMunicipioLideres, setFiltroMunicipioLideres] = useState('todos')
 
   // Líderes filtrados para campaña de invitación
   const lideresFiltrados = votantes.filter(votante => {
-    const esPotencial = votante.estado === 'potencial'
-    const coincideEstado = filtroEstadoLideres === 'todos' || votante.estado === filtroEstadoLideres
-    const coincideBusqueda = !busquedaLideres ||
-      votante.nombre.toLowerCase().includes(busquedaLideres.toLowerCase()) ||
-      votante.cedula.includes(busquedaLideres)
-    return esPotencial && coincideEstado && coincideBusqueda
+  const esRolValido = ['lider', 'coordinador'].includes(votante.estado)
+  const coincideEstado = 
+    filtroEstadoLideres === 'todos' || 
+    votante.estado === filtroEstadoLideres
+  const coincideMunicipio = 
+    filtroMunicipioLideres === 'todos' || 
+    votante.municipio === filtroMunicipioLideres
+  const coincideBusqueda = !busquedaLideres ||
+    votante.nombre.toLowerCase().includes(busquedaLideres.toLowerCase()) ||
+    votante.cedula.includes(busquedaLideres)
+
+  return esRolValido && coincideEstado && coincideMunicipio && coincideBusqueda
   })
+
+
 
 
   // Votantes filtrados para mensajería
@@ -1765,11 +1774,55 @@ const stats = [
                       </Button>
                     </div>
 
-                    <Input
-                      placeholder="Buscar líder por nombre o cédula..."
-                      value={busquedaLideres}
-                      onChange={(e) => setBusquedaLideres(e.target.value)}
+                   <Input
+                    placeholder="Buscar líder por nombre o cédula..."
+                    value={busquedaLideres}
+                    onChange={(e) => setBusquedaLideres(e.target.value)}
                     />
+
+                    {/* Filtro por municipio */}
+                    <div className="w-full sm:w-48 mt-2">
+                    <Label htmlFor="filtroMunicipioLideres" className="text-sm text-gray-600">Filtrar por municipio</Label>
+                    <Select value={filtroMunicipioLideres} onValueChange={setFiltroMunicipioLideres}>
+                    <SelectTrigger id="filtroMunicipioLideres" className="mt-1">
+                    <SelectValue placeholder="Todos los municipios" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="todos">Todos los municipios</SelectItem>
+                    {[
+                    'Aguadas',
+                    'Anserma',
+                    'Aranzazu',
+                    'Belalcázar',
+                    'Chinchiná',
+                    'Filadelfia',
+                    'La Dorada',
+                    'La Merced',
+                    'Manizales',
+                    'Manzanares',
+                    'Marmato',
+                    'Marquetalia',
+                    'Marulanda',
+                    'Neira',
+                    'Norcasia',
+                    'Pácora',
+                    'Palestina',
+                    'Pensilvania',
+                    'Riosucio',
+                    'Risaralda',
+                    'Salamina',
+                    'Samaná',
+                    'San José',
+                    'Supía',
+                    'Victoria',
+                    'Villamaría',
+                    'Viterbo'
+                    ].map(municipio => (
+                    <SelectItem key={municipio} value={municipio}>{municipio}</SelectItem>
+                    ))}
+                    </SelectContent>
+                    </Select>
+                    </div>
 
                     <div className="max-h-60 overflow-y-auto border rounded-lg">
                     {lideresFiltrados.length > 0 ? (
