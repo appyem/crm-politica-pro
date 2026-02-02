@@ -1069,7 +1069,7 @@ const stats = [
                             </div>
 
                            {/* Selector de líderes */}
-                            {evento.lideres && Array.isArray(evento.lideres) && evento.lideres.length > 0 && (
+                            {evento.lideres && evento.lideres.length > 0 && (
                             <div className="mt-3">
                             <Label className="text-xs text-gray-700">Líderes con invitaciones</Label>
                             <Select
@@ -1077,7 +1077,9 @@ const stats = [
                             const container = document.getElementById(`inscritos-${evento.id}`);
                             if (container) {
                             container.innerHTML = '';
-                            const inscritosFiltrados = (evento.inscripciones || []).filter(i => i.liderId === selectedLiderId);
+                            // Verificar que inscripciones no sea null
+                            const inscripciones = evento.inscripciones || [];
+                            const inscritosFiltrados = inscripciones.filter(i => i.liderId === selectedLiderId);
                             if (inscritosFiltrados.length > 0) {
                             inscritosFiltrados.forEach(insc => {
                             const div = document.createElement('div');
