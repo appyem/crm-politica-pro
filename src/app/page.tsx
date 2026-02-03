@@ -461,7 +461,7 @@ const stats = [
     }
   }
 
-  // Funciones para manejar plantillas
+  // Funciones para manejar 
   const handleSavePlantilla = async (plantillaData: Partial<Plantilla>) => {
     try {
       const url = editingPlantilla ? `/api/plantillas/${editingPlantilla.id}` : '/api/plantillas'
