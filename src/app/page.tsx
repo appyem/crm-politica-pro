@@ -172,22 +172,21 @@ export default function PoliticalCRM() {
   const [lideresSeleccionados, setLideresSeleccionados] = useState<Set<string>>(new Set())
   const [filtroMunicipioLideres, setFiltroMunicipioLideres] = useState('todos')
 
-  // Líderes filtrados para campaña de invitación
-  const lideresFiltrados = votantes.filter(votante => {
-  const esRolValido = ['lider', 'coordinador'].includes(votante.estado)
+// Líderes filtrados para campaña de invitación
+const lideresFiltrados = votantes.filter(v => {
+  const rolesValidos = ['potencial', 'simpatizante', 'voluntario', 'indeciso', 'lider', 'coordinador']
+  const esRolValido = rolesValidos.includes(v.estado)
   const coincideEstado = 
     filtroEstadoLideres === 'todos' || 
-    votante.estado === filtroEstadoLideres
+    v.estado === filtroEstadoLideres
   const coincideMunicipio = 
     filtroMunicipioLideres === 'todos' || 
-    votante.municipio === filtroMunicipioLideres
+    v.municipio === filtroMunicipioLideres
   const coincideBusqueda = !busquedaLideres ||
-    votante.nombre.toLowerCase().includes(busquedaLideres.toLowerCase()) ||
-    votante.cedula.includes(busquedaLideres)
-
+    v.nombre.toLowerCase().includes(busquedaLideres.toLowerCase()) ||
+    v.cedula.includes(busquedaLideres)
   return esRolValido && coincideEstado && coincideMunicipio && coincideBusqueda
-  })
-
+})
 
 
 
@@ -1837,7 +1836,11 @@ const stats = [
                                   {lider.whatsapp || 'Sin WhatsApp'}
                                 </p>
                               </div>
-                              <Badge variant="outline">Potencial</Badge>
+                             <Badge variant="outline">
+                              {lider.estado === 'lider' ? 'Líder' : 
+                              lider.estado === 'coordinador' ? 'Coordinador' : 
+                              lider.estado.charAt(0).toUpperCase() + lider.estado.slice(1)}
+                            </Badge>
                             </div>
                             <Button
                               size="sm"
@@ -1852,36 +1855,36 @@ const stats = [
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <p className="text-gray-500 text-center py-4">No hay líderes que coincidan</p>
+                      ) : (
+                        <p className="text-gray-500 text-center py-4">No hay líderes que coincidan</p>
+                      )}
+                    </div>
+  
+                    {/* Botón para enviar a todos (opcional) */}
+                    {selectedEvento && (
+                      <Button
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                        onClick={() => {
+                          if (lideresFiltrados.length === 0) {
+                            alert('No hay líderes para enviar')
+                            return
+                          }
+                          if (!confirm(`¿Abrir WhatsApp Web para ${lideresFiltrados.length} líderes? Esto abrirá ${lideresFiltrados.length} pestañas.`)) {
+                            return
+                          }
+                          lideresFiltrados.forEach(lider => {
+                            if (lider.whatsapp) {
+                              handleEnviarPorWhatsAppWeb(lider.id)
+                            }
+                          })
+                        }}
+                        disabled={lideresFiltrados.length === 0}
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        Enviar a todos los {lideresFiltrados.length} líderes
+                      </Button>
                     )}
                   </div>
-
-                  {/* Botón para enviar a todos (opcional) */}
-                  {selectedEvento && (
-                    <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                      onClick={() => {
-                        if (lideresFiltrados.length === 0) {
-                          alert('No hay líderes para enviar')
-                          return
-                        }
-                        if (!confirm(`¿Abrir WhatsApp Web para ${lideresFiltrados.length} líderes? Esto abrirá ${lideresFiltrados.length} pestañas.`)) {
-                          return
-                        }
-                        lideresFiltrados.forEach(lider => {
-                          if (lider.whatsapp) {
-                            handleEnviarPorWhatsAppWeb(lider.id)
-                          }
-                        })
-                      }}
-                      disabled={lideresFiltrados.length === 0}
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Enviar a todos los {lideresFiltrados.length} líderes
-                    </Button>
-                  )}
-                                    </div>
                 )}
               </CardContent>
             </Card>
