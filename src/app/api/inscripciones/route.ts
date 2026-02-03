@@ -29,11 +29,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 })
     }
 
-    // Verificar que el líder exista y sea "potencial"
+    // Verificar que el líder exista y tenga un rol válido
     const lider = await db.votante.findUnique({
       where: { id: body.liderId }
     })
-    if (!lider || lider.estado !== 'potencial') {
+    const rolesValidos = ['potencial', 'lider', 'coordinador']
+    if (!lider || !rolesValidos.includes(lider.estado)) {
       return NextResponse.json({ error: 'Líder no válido' }, { status: 404 })
     }
 
