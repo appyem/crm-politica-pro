@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Obtener el líder (debe ser un votante con estado "potencial")
+    // Obtener el líder (debe ser un votante con rol válido: potencial, lider o coordinador)
     const lider = await db.votante.findUnique({
       where: { id: liderId },
       select: {
@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    if (!lider || lider.estado !== 'potencial') {
+    const rolesValidos = ['potencial', 'lider', 'coordinador']
+    if (!lider || !rolesValidos.includes(lider.estado)) {
       return NextResponse.json(
         { error: 'Líder no válido' },
         { status: 404 }
