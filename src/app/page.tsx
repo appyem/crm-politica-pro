@@ -544,50 +544,6 @@ const stats = [
       return
     }
 
-
-  // Función para enviar mensaje por WhatsApp Web (con tracking local)
-  const handleEnviarPorWhatsAppWeb = (liderId: string) => {
-    const lider = votantes.find(v => v.id === liderId)
-    if (!lider || !lider.whatsapp) {
-      alert('Líder no tiene número de WhatsApp')
-      return
-    }
-
-    const evento = selectedEvento
-    if (!evento) {
-      alert('No hay evento seleccionado')
-      return
-    }
-
-    // Verificar si ya se envió recientemente
-    const mensajesEnviados = JSON.parse(localStorage.getItem('mensajesEnviados') || '[]')
-    if (mensajesEnviados.includes(liderId)) {
-      if (!confirm(`Ya se envió un mensaje a ${lider.nombre}. ¿Enviar nuevamente?`)) {
-        return
-      }
-    }
-
-    // Construir enlace de inscripción
-    const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`
-    
-    // Mensaje personalizado
-    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nDesde el siguiente enlace podrás inscribir a tus invitados:\n${enlace}`
-    
-    // Codificar para URL
-    const mensajeCodificado = encodeURIComponent(mensaje)
-    const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp
-    
-    // Abrir WhatsApp nativo (funciona en móvil y PC)
-    const whatsappUrl = `https://wa.me/${numero.replace('+', '')}?text=${mensajeCodificado}`;
-    window.open(whatsappUrl, '_blank');
-    
-    // Registrar que se envió
-    mensajesEnviados.push(liderId)
-    localStorage.setItem('mensajesEnviados', JSON.stringify(mensajesEnviados))
-  }
-
-
-
     const confirmacion = confirm(`¿Estás seguro de enviar invitaciones a ${lideresSeleccionados.size} líderes?`)
     if (!confirmacion) return
 
@@ -642,36 +598,34 @@ const stats = [
     }
   }
 
+  // Función para enviar mensaje por WhatsApp Web
   const handleEnviarPorWhatsAppWeb = (liderId: string) => {
-    const lider = votantes.find(v => v.id === liderId);
+    const lider = votantes.find(v => v.id === liderId)
     if (!lider || !lider.whatsapp) {
-      alert('Líder no tiene número de WhatsApp');
-      return;
+      alert('Líder no tiene número de WhatsApp')
+      return
     }
 
-    const evento = selectedEvento;
+    const evento = selectedEvento
     if (!evento) {
-      alert('No hay evento seleccionado');
-      return;
+      alert('No hay evento seleccionado')
+      return
     }
 
     // Construir enlace de inscripción
-    const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`;
+    const enlace = `${window.location.origin}/inscripcion?evento=${evento.id}&lider=${liderId}`
     
     // Mensaje personalizado
-    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nDesde el siguiente enlace podrás inscribir a tus invitados:\n${enlace}`;
+    const mensaje = `¡Hola ${lider.nombre}! Te invitamos a liderar en el evento "${evento.titulo}".\n\nDesde el siguiente enlace podrás inscribir a tus invitados:\n${enlace}`
     
     // Codificar para URL
-    const mensajeCodificado = encodeURIComponent(mensaje);
-    const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp;
+    const mensajeCodificado = encodeURIComponent(mensaje)
+    const numero = lider.whatsapp.startsWith('+') ? lider.whatsapp : '+' + lider.whatsapp
     
-    // Abrir directamente WhatsApp Web
     // Abrir WhatsApp nativo (funciona en móvil y PC)
-    const whatsappUrl = `https://wa.me/${numero.replace('+', '')}?text=${mensajeCodificado}`;
-    window.open(whatsappUrl, '_blank');
+    const whatsappUrl = `https://wa.me/${numero.replace('+', '')}?text=${mensajeCodificado}`
+    window.open(whatsappUrl, '_blank')
   }
-  // Esta función ya está implementada arriba en el código
-  // Solo elimina esta declaración duplicada y usa la implementación existente
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-red-50">
       {/* Header Político Moderno */}
@@ -2047,7 +2001,7 @@ const stats = [
 
             {/* Selector de líder para enlace de inscripción */}
             <div>
-              <Label htmlFor="lider">Líder (Potencial)</Label>
+              <Label htmlFor="lider">Líder o Coordinador</Label>
               <Select
                 defaultValue={editingEvento?.liderId || ''}
                 onValueChange={(value) => {
@@ -2056,19 +2010,18 @@ const stats = [
                 }}
               >
                 <SelectTrigger id="lider">
-                  <SelectValue placeholder="Seleccione un líder" />
+                  <SelectValue placeholder="Seleccione un líder o coordinador" />
                 </SelectTrigger>
                 <SelectContent>
                   {votantes
-                    .filter(v => v.estado === 'potencial')
+                    .filter(v => ['lider', 'coordinador'].includes(v.estado))
                     .map(lider => (
                       <SelectItem key={lider.id} value={lider.id}>
-                        {lider.nombre} ({lider.cedula})
+                        {lider.nombre} ({lider.cedula}) - {lider.estado === 'lider' ? 'Líder' : 'Coordinador'}
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
-              {/* Campo oculto para guardar el valor */}
               <input type="hidden" id="liderId" defaultValue={editingEvento?.liderId || ''} />
             </div>
 
